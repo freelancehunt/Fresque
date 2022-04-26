@@ -4,7 +4,7 @@ namespace Fresque\Test;
 // Used to mock the filesystem
 use org\bovigo\vfs\vfsStream;
 
-class FresqueTest extends \PHPUnit_Framework_TestCase
+class FresqueTest extends \PHPUnit\Framework\TestCase
 {
 
     public function setUp()
