@@ -7,7 +7,7 @@ use org\bovigo\vfs\vfsStream;
 class FresqueTest extends \PHPUnit_Framework_TestCase
 {
 
-    public function setUp()
+    protected function setUp(): void
     {
         $_SERVER['argv'] = [];
 
@@ -101,7 +101,7 @@ class FresqueTest extends \PHPUnit_Framework_TestCase
         $method = new \ReflectionMethod('\Fresque\Fresque', 'getResqueBinFile');
         $method->setAccessible(true);
 
-        $root = vfsStream::setup('resque');
+        $root = vfsStream::setUp('resque');
         $root->addChild(vfsStream::newDirectory('bin'));
         $root->getChild('bin')->addChild(vfsStream::newFile('resque'));
 
@@ -122,7 +122,7 @@ class FresqueTest extends \PHPUnit_Framework_TestCase
         $method = new \ReflectionMethod('\Fresque\Fresque', 'getResqueBinFile');
         $method->setAccessible(true);
 
-        $root = vfsStream::setup('resque');
+        $root = vfsStream::setUp('resque');
         $root->addChild(vfsStream::newDirectory('bin'));
         $root->getChild('bin')->addChild(vfsStream::newFile('resque.php'));
 
@@ -142,7 +142,7 @@ class FresqueTest extends \PHPUnit_Framework_TestCase
         $method = new \ReflectionMethod('\Fresque\Fresque', 'getResqueBinFile');
         $method->setAccessible(true);
 
-        $root = vfsStream::setup('resque');
+        $root = vfsStream::setUp('resque');
         $this->assertEquals('./resque.php', $method->invoke($this->shell, vfsStream::url('resque')));
     }
 
