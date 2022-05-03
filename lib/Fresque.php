@@ -19,6 +19,8 @@
 
 namespace Fresque;
 
+use ResqueStatus\ResqueStatus;
+
 define('DS', DIRECTORY_SEPARATOR);
 include __DIR__ . DS . 'DialogMenuValidator.php';
 include __DIR__ . DS . 'SendSignalCommandOptions.php';
@@ -46,6 +48,16 @@ class Fresque
     public static $Resque = '\Resque';
 
     public static $Resque_Worker = '\Resque_Worker';
+
+    /**
+     * @var ResqueStatus|null
+     */
+    public $ResqueStatus = null;
+
+    /**
+     * @var ResqueStats|null;
+     */
+    public $ResqueStats = null;
 
     public static $checkStartedWorkerBufferTime = 100000;
 
@@ -394,24 +406,15 @@ class Fresque
                         'warning'
                     );
                 }
-                call_user_func_array(
-                    self::$Resque . '::setBackend',
-                    array(
-                        $this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port'],
-                        $this->runtime['Redis']['database'],
-                        $this->runtime['Redis']['namespace'],
-                        $this->runtime['Redis']['password']
-                    )
-                );
-
+                $this->setResqueBackend();
 
                 if ($this->runtime['Scheduler']['enabled'] === true) {
                     require_once realpath($this->runtime['Scheduler']['lib'] . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'ResqueScheduler.php');
                     require_once realpath($this->runtime['Scheduler']['lib'] . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Stat.php');
                 }
 
-                $this->ResqueStatus = new \ResqueStatus\ResqueStatus(\Resque::Redis());
-                $this->ResqueStats = new ResqueStats(\Resque::Redis());
+                $this->ResqueStatus = $this->initResqueStatus();
+                $this->ResqueStats = $this->initResqueStats();
                 $this->{$command}();
             }
         }
@@ -474,12 +477,14 @@ class Fresque
 
             // build environment variables string to be passed to the worker
             $env_vars = "";
-            foreach($this->runtime['Env'] as $env_name => $env_value) {
-                // if only the name is supplied, we get the value from environment
-                if (strlen($env_value) == 0) {
-                    $env_value = getenv($env_name);
+            if (!empty($this->runtime['Env'])) {
+                foreach($this->runtime['Env'] as $env_name => $env_value) {
+                    // if only the name is supplied, we get the value from environment
+                    if (strlen($env_value) == 0) {
+                        $env_value = getenv($env_name);
+                    }
+                    $env_vars .= $env_name . '=' . escapeshellarg($env_value) . " \\\n";
                 }
-                $env_vars .= $env_name . '=' . escapeshellarg($env_value) . " \\\n";
             }
 
             $cmd = 'nohup ' . ($this->runtime['Default']['user'] !== $this->getProcessOwner() ? ('sudo -u '. escapeshellarg($this->runtime['Default']['user'])) : "") . " \\\n".
@@ -562,7 +567,7 @@ class Fresque
         $options->allOption = 'Stop all workers';
         $options->selectMessage = 'Worker to stop';
         $options->actionMessage = 'stopping';
-        $options->workers = call_user_func(self::$Resque_Worker. '::all');
+        $options->workers = $this->getActiveWorkers();
         $options->signal = $this->input->getOption('force')->value === true ? 'TERM' : 'QUIT';
         $options->successCallback = function ($pid, $workerName) use ($ResqueStatus) {
             $ResqueStatus->removeWorker($pid);
@@ -584,7 +589,7 @@ class Fresque
     {
         $ResqueStatus = $this->ResqueStatus;
 
-        $activeWorkers = call_user_func(self::$Resque_Worker . '::all');
+        $activeWorkers = $this->getActiveWorkers();
         array_walk(
             $activeWorkers,
             function (&$worker) {
@@ -708,7 +713,7 @@ class Fresque
             foreach ($workerIndex as $index) {
                 $worker = $options->workers[$index - 1];
 
-                list($hostname, $pid, $queue) = explode(':', (string)$worker);
+                [$hostname, $pid, $queue] = explode(':', (string)$worker);
 
                 $this->debug('Sending -' . $options->signal . ' signal to process ID ' . $pid);
 
@@ -868,11 +873,11 @@ class Fresque
 
         $args = $this->input->getArguments();
 
-        if (count($args) >= 2) {
+        if (!empty($args) && count($args) >= 2) {
             $queue = array_shift($args);
             $class = array_shift($args);
 
-            $result = call_user_func_array(self::$Resque . '::enqueue', array($queue, $class, $args));
+            $result = $this->enqueueJob($queue, $class, $args);
             $this->output->outputLine('The job was enqueued successfully', 'success');
             $this->output->outputLine('Job ID : #' . $result . "\n");
         } else {
@@ -908,8 +913,8 @@ class Fresque
 
         $this->output->outputLine();
         $this->output->outputLine('Jobs Stats', 'subtitle');
-        $this->output->outputLine('   ' . sprintf('Processed Jobs : %10s', number_format(\Resque_Stat::get('processed'))));
-        $this->output->outputLine('   ' . sprintf('Failed Jobs    : %10s', number_format(\Resque_Stat::get('failed'))), 'failure');
+        $this->output->outputLine('   ' . sprintf('Processed Jobs : %10s', number_format($this->getResqueStat('processed'))));
+        $this->output->outputLine('   ' . sprintf('Failed Jobs    : %10s', number_format($this->getResqueStat('failed'))), 'failure');
         if ($this->runtime['Scheduler']['enabled'] === true) {
             $this->output->outputLine('   ' . sprintf('Scheduled Jobs : %10s', number_format(\ResqueScheduler\Stat::get())));
         }
@@ -1515,25 +1520,66 @@ class Fresque
         return $menuDialog->getResult();
     }
 
-/**
- * Return the user owning the current process
- *
- * @codeCoverageIgnore
- * @since 1.2.4
- * @return string Username of the current process owner if found, else false
- */
-    private function getProcessOwner() {
+    /**
+     * Return the user owning the current process
+     *
+     * @codeCoverageIgnore
+     * @return string Username of the current process owner if found, else false
+     * @since 1.2.4
+     */
+    private function getProcessOwner()
+    {
         if (function_exists('posix_getpwuid')) {
             $a = posix_getpwuid(posix_getuid());
+
             return $a['name'];
         } else {
             $user = trim(exec('whoami', $o, $code));
             if ($code === 0) {
                 return $user;
             }
+
             return false;
         }
 
         return false;
+    }
+
+    public function getActiveWorkers(): array
+    {
+        return call_user_func(self::$Resque_Worker . '::all');
+    }
+
+    protected function enqueueJob($queue, $class, array $args): string
+    {
+        return call_user_func_array(self::$Resque . '::enqueue', [$queue, $class, $args]);
+    }
+
+    protected function setResqueBackend(): void
+    {
+        call_user_func_array(
+            self::$Resque . '::setBackend',
+            [
+                $this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port'],
+                $this->runtime['Redis']['database'],
+                $this->runtime['Redis']['namespace'],
+                $this->runtime['Redis']['password']
+            ]
+        );
+    }
+
+    protected function initResqueStatus(): ResqueStatus
+    {
+        return new ResqueStatus(\Resque::Redis());
+    }
+
+    protected function initResqueStats(): ResqueStats
+    {
+        return new ResqueStats(\Resque::Redis());
+    }
+
+    protected function getResqueStat($value): int
+    {
+        return (int) \Resque_Stat::get($value);
     }
 }
