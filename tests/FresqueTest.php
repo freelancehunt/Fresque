@@ -37,6 +37,7 @@ class FresqueTest extends TestCase
             'Redis' => array(
                 'host' => '',
                 'database' => 0,
+                'password' => null,
                 'port' => 0,
                 'namespace' => ''
             ),
@@ -46,9 +47,10 @@ class FresqueTest extends TestCase
                 'filename' => ''
             ),
             'Scheduler' => array(
-                'lib' => './vendor/kamisama/phhp-resque-ex-scheduler',
-                'log' => ''
-            )
+                'enabled' => false,
+                'lib'     => './vendor/kamisama/phhp-resque-ex-scheduler',
+                'log'     => '',
+            ),
         );
 
         $this->sendSignalOptions = new \Fresque\SendSignalCommandOptions();
@@ -451,6 +453,8 @@ class FresqueTest extends TestCase
         $this->shell->expects($this->once())->method('kill')->with($this->equalTo($this->sendSignalOptions->signal), $this->equalTo('100'))->will($this->returnValue(array('code' => 0, 'message' => '')));
 
         $this->sendSignalOptions->workers = array('host:100:queue');
+
+        $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
@@ -474,6 +478,8 @@ class FresqueTest extends TestCase
             ->will($this->returnValue(array('code' => 1, 'message' => 'Error message')));
 
         $this->sendSignalOptions->workers = array('host:100:queue');
+
+        $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
@@ -506,6 +512,8 @@ class FresqueTest extends TestCase
             'host:101:queue',
             'host:102:queue'
         );
+
+        $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
@@ -540,6 +548,8 @@ class FresqueTest extends TestCase
             'host:101:queue',
             'host:102:queue'
         );
+
+        $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
@@ -570,6 +580,8 @@ class FresqueTest extends TestCase
             'host:101:queue',
             'host:102:queue'
         );
+
+        $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
@@ -731,7 +743,7 @@ class FresqueTest extends TestCase
 
         $this->output->expects($this->at(30))->method('outputLine');
 
-
+        $this->shell->runtime = $this->startArgs;
         $this->shell->stats();
     }
 
@@ -775,6 +787,7 @@ class FresqueTest extends TestCase
         $this->shell->expects($this->once())->method('initResqueStatus');
         $this->shell->expects($this->once())->method('initResqueStats');
 
+        $this->shell->runtime = $this->startArgs;
         $this->shell->callCommand('start');
     }
 
@@ -804,6 +817,7 @@ class FresqueTest extends TestCase
         unset($invalidOptions['i']);
         $this->output->expects($this->at(0))->method('outputLine')->with($this->equalTo('Invalid options -' . implode(', -', array_keys($invalidOptions)) . ' will be ignored'));
 
+        $this->shell->runtime = $this->startArgs;
         $this->shell->callCommand('start');
     }
 

@@ -1,37 +1,44 @@
 {
-	"name": "fresque/fresque",
-	"description" : "A command line tool to manage your php-resque workers",
-	"keywords": ["php-resque", "resque", "cli", "redis"],
-	"homepage": "http://kamisama.github.com/Fresque/",
-	"authors": [
-		{
-			"name": "Wan Chen",
-			"email": "kami@kamisama.me",
-			"homepage": "http://www.kamisama.me"
-		}
-	],
-	"license": "MIT",
-	"require": {
-		"php": ">=7.3",
-        "ext-posix": "*",
-		"zetacomponents/console-tools" : ">=1.6",
-		"zetacomponents/base" : ">=1.8",
-        "kamisama/resque-status": ">=0.0.1",
-        "kamisama/php-resque-ex": ">=1.2.5",
-        "kamisama/php-resque-ex-scheduler": "~1.2.2"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "mikey179/vfsstream": "^1.6.10",
-        "php-coveralls/php-coveralls": "^2.3"
-    },
-	"suggest": {
-		"chrisboulton/php-resque" : "PHP port of resque (Workers and Queueing)"
-	},
-	"support": {
-		"email": "kami@kamisama.me",
-		"issues": "https://github.com/kamisama/Fresque/issues",
-		"source": "https://github.com/kamisama/Fresque"
-	},
-    "bin": ["fresque"]
+  "name": "fresque/fresque",
+  "description": "A command line tool to manage your php-resque workers",
+  "keywords": [
+    "php-resque",
+    "resque",
+    "cli",
+    "redis"
+  ],
+  "homepage": "http://kamisama.github.com/Fresque/",
+  "authors": [
+    {
+      "name": "Wan Chen",
+      "email": "kami@kamisama.me",
+      "homepage": "http://www.kamisama.me"
+    }
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=8.0",
+    "ext-posix": "*",
+    "zetacomponents/console-tools": ">=1.6",
+    "zetacomponents/base": ">=1.8",
+    "kamisama/resque-status": ">=0.0.1",
+    "kamisama/php-resque-ex": ">=1.2.5",
+    "kamisama/php-resque-ex-scheduler": "~1.2.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5",
+    "mikey179/vfsstream": "^1.6.10",
+    "php-coveralls/php-coveralls": "^2.3"
+  },
+  "suggest": {
+    "chrisboulton/php-resque": "PHP port of resque (Workers and Queueing)"
+  },
+  "support": {
+    "email": "kami@kamisama.me",
+    "issues": "https://github.com/kamisama/Fresque/issues",
+    "source": "https://github.com/kamisama/Fresque"
+  },
+  "bin": [
+    "fresque"
+  ]
 }
