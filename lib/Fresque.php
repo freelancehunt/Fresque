@@ -492,7 +492,7 @@ class Fresque
                 'REDIS_BACKEND=' . escapeshellarg($this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port']) . " \\\n" .
                 'REDIS_DATABASE=' . escapeshellarg($this->runtime['Redis']['database']) . " \\\n" .
                 'REDIS_NAMESPACE=' . escapeshellarg($this->runtime['Redis']['namespace']) . " \\\n" .
-                'REDIS_PASSWORD=' . escapeshellarg($this->runtime['Redis']['password']) . " \\\n" .
+                (!empty($this->runtime['Redis']['password']) ? 'REDIS_PASSWORD=' . escapeshellarg($this->runtime['Redis']['password']) . " \\\n" : '') .
                 'COUNT=' . 1 . " \\\n" .
                 'LOGHANDLER=' . escapeshellarg($this->runtime['Log']['handler']) . " \\\n" .
                 'LOGHANDLERTARGET=' . escapeshellarg($this->runtime['Log']['target']) . " \\\n" .
@@ -1552,15 +1552,15 @@ class Fresque
 
     protected function setResqueBackend(): void
     {
-        call_user_func_array(
-            self::$Resque . '::setBackend',
-            [
-                $this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port'],
-                $this->runtime['Redis']['database'],
-                $this->runtime['Redis']['namespace'],
-                $this->runtime['Redis']['password'],
-            ]
-        );
+        $args = [
+            $this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port'],
+            $this->runtime['Redis']['database'],
+            $this->runtime['Redis']['namespace'],
+        ];
+        if (!empty($this->runtime['Redis']['password'])) {
+            $args[] = $this->runtime['Redis']['password'];
+        }
+        call_user_func_array(self::$Resque . '::setBackend', $args);
     }
 
     protected function initResqueStatus(): ResqueStatus
