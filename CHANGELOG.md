@@ -1,5 +1,11 @@
 ##Changelog
 
+###v2.0.0 (2022-05-05)
+
+* [new] Add PHP8 support
+* [new] Add PHPUnit 9.5 support
+* [new] Move some dependencies to main repo
+
 ###v1.3.1 (2015-05-11)
 
 * [fix] Update php-resque-ex required version
