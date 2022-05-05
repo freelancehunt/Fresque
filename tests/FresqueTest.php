@@ -19,7 +19,8 @@ class FresqueTest extends TestCase
         $this->shell->input = $this->input;
 
         $this->shell->ResqueStatus = $this->ResqueStatus = $this->createMock('\ResqueStatus\ResqueStatus');
-        $this->shell->ResqueStats = $this->ResqueStats = $this->createMock('\Fresque\ResqueStats');
+        $this->shell->ResqueStats = $this->ResqueStats = $this->getMockBuilder('\Fresque\ResqueStats')->disableOriginalConstructor()->getMock();
+        $this->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
         $this->startArgs = array(
 
@@ -75,7 +76,11 @@ class FresqueTest extends TestCase
      */
     public function testDebug()
     {
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains('[DEBUG] test string'));
+        $this->output
+            ->expects($this->exactly(1))
+            ->method('outputLine')
+            ->withConsecutive([$this->stringContains('[DEBUG] test string')]);
+
         $this->shell->debug = true;
         $this->shell->debug('test string');
     }
@@ -157,10 +162,15 @@ class FresqueTest extends TestCase
     public function testOutputMainTitle()
     {
         $title = 'my first title';
-        $this->output->expects($this->exactly(3))->method('outputLine');
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->equalTo(str_repeat('-', strlen($title))));
-        $this->output->expects($this->at(1))->method('outputLine')->with($this->equalTo($title), $this->equalTo('title'));
-        $this->output->expects($this->at(2))->method('outputLine')->with($this->equalTo(str_repeat('-', strlen($title))));
+
+        $this->output
+            ->expects($this->exactly(3))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->equalTo(str_repeat('-', strlen($title)))],
+                [$this->equalTo($title), $this->equalTo('title')],
+                [$this->equalTo(str_repeat('-', strlen($title)))]
+            );
 
         $this->shell = $this->getMockBuilder('\Fresque\Fresque')->onlyMethods(array('callCommand'))->getMock();
         $this->shell->output = $this->output;
@@ -199,13 +209,22 @@ class FresqueTest extends TestCase
         $this->shell->expects($this->once())->method('exec')->will($this->returnValue(true));
         $this->shell->expects($this->once())->method('checkStartedWorker')->will($this->returnValue(true));
 
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('starting worker'));
-        $this->output->expects($this->at(1))->method('outputText')->with($this->stringContains('.'));
-        $this->output->expects($this->at(2))->method('outputText')->with($this->stringContains('.'));
-        $this->output->expects($this->at(3))->method('outputText')->with($this->stringContains('.'));
-        $this->output->expects($this->at(4))->method('outputLine')->with($this->stringContains('done'));
-        $this->output->expects($this->exactly(1))->method('outputLine');
-        $this->output->expects($this->exactly(4))->method('outputText');
+        $this->output
+            ->expects($this->exactly(1))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('done')],
+            );
+
+        $this->output
+            ->expects($this->exactly(4))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('starting worker')],
+                [$this->stringContains('.')],
+                [$this->stringContains('.')],
+                [$this->stringContains('.')],
+            );
 
         $this->ResqueStatus = $this->getMockBuilder('ResqueStatus\ResqueStatus')->disableOriginalConstructor()->onlyMethods(array('isRunningSchedulerWorker', 'addWorker'))->getMock();
 
@@ -232,13 +251,22 @@ class FresqueTest extends TestCase
         $this->shell->expects($this->once())->method('exec')->will($this->returnValue(true));
         $this->shell->expects($this->once())->method('checkStartedWorker')->will($this->returnValue(true));
 
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('Starting scheduler worker'));
-        $this->output->expects($this->at(1))->method('outputText')->with($this->stringContains('.'));
-        $this->output->expects($this->at(2))->method('outputText')->with($this->stringContains('.'));
-        $this->output->expects($this->at(3))->method('outputText')->with($this->stringContains('.'));
-        $this->output->expects($this->at(4))->method('outputLine')->with($this->stringContains('done'));
-        $this->output->expects($this->exactly(1))->method('outputLine');
-        $this->output->expects($this->exactly(4))->method('outputText');
+        $this->output
+            ->expects($this->exactly(1))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('done')],
+            );
+
+        $this->output
+            ->expects($this->exactly(4))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('Starting scheduler worker')],
+                [$this->stringContains('.')],
+                [$this->stringContains('.')],
+                [$this->stringContains('.')],
+            );
 
         $this->ResqueStatus = $this->getMockBuilder('ResqueStatus\ResqueStatus')->disableOriginalConstructor()->onlyMethods(array('isRunningSchedulerWorker', 'registerSchedulerWorker', 'addWorker'))->getMock();
 
@@ -259,9 +287,14 @@ class FresqueTest extends TestCase
 
         $this->ResqueStatus->expects($this->once())->method('getWorkers')->will($this->returnValue(array()));
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('restarting workers'));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains('no workers to restart'));
 
-        $this->output->expects($this->exactly(2))->method('outputLine');
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('no workers to restart')],
+            );
+
         $this->shell->expects($this->never())->method('start');
         $this->shell->expects($this->never())->method('stop');
         $this->shell->ResqueStatus = $this->ResqueStatus;
@@ -279,9 +312,13 @@ class FresqueTest extends TestCase
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('restarting workers'));
         $this->output->expects($this->once())->method('outputLine');
 
-        $this->shell->expects($this->exactly(2))->method('start');
-        $this->shell->expects($this->at(2))->method('start')->with($this->equalTo($workers[0]));
-        $this->shell->expects($this->at(3))->method('start')->with($this->equalTo($workers[1]));
+        $this->shell
+            ->expects($this->exactly(2))
+            ->method('start')
+            ->withConsecutive(
+                [$this->equalTo($workers[0])],
+                [$this->equalTo($workers[1])],
+            );
         $this->shell->expects($this->once())->method('stop');
         $this->shell->ResqueStatus = $this->ResqueStatus;
         $this->shell->restart();
@@ -298,8 +335,13 @@ class FresqueTest extends TestCase
         $workers = array(0, 1);
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Loading predefined workers'));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains('You have no configured workers to load'));
-        $this->output->expects($this->exactly(2))->method('outputLine');
+
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('You have no configured workers to load')],
+            );
 
         $this->shell->ResqueStatus = $this->ResqueStatus;
         $this->shell->runtime['Queues'] = array();
@@ -317,9 +359,14 @@ class FresqueTest extends TestCase
         $workers = array(0, 1);
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Loading predefined workers'));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains('Loading 2 workers'));
         $this->shell->expects($this->exactly(2))->method('start');
-        $this->output->expects($this->exactly(2))->method('outputLine');
+
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('Loading 2 workers')],
+            );
 
         $this->shell->ResqueStatus = $this->ResqueStatus;
         $this->shell->config = '';
@@ -342,9 +389,15 @@ class FresqueTest extends TestCase
     public function testEnqueueJobWithoutArguments()
     {
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Queuing a job'));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains('Enqueue takes at least 2 arguments'));
-        $this->output->expects($this->at(1))->method('outputLine')->with($this->stringContains('usage'));
-        $this->output->expects($this->at(5))->method('outputLine');
+
+        $this->output
+            ->expects($this->exactly(6))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('Enqueue takes at least 2 arguments')],
+                [$this->stringContains('usage')],
+            );
+
         $this->shell->enqueue();
     }
 
@@ -363,9 +416,14 @@ class FresqueTest extends TestCase
         $this->input->expects($this->once())->method('getArguments')->will($this->returnValue($job));
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Queuing a job'));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains('The job was enqueued successfully'));
-        $this->output->expects($this->at(1))->method('outputLine')->with($this->stringContains('job id : #' . $id));
-        $this->output->expects($this->exactly(2))->method('outputLine');
+
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains('The job was enqueued successfully')],
+                [$this->stringContains('job id : #' . $id)],
+            );
 
         $this->shell->enqueue();
     }
@@ -389,15 +447,25 @@ class FresqueTest extends TestCase
                     'options' => array('f', 'w', 'g'))
         );
 
-        $this->output->expects($this->at(2))->method('outputLine')->with($this->stringContains('Available commands'));
+        $this->output
+            ->expects($this->exactly(4))
+            ->method('outputLine')
+            ->withConsecutive(
+                [],
+                [],
+                [$this->stringContains('Available commands')],
+                [$this->stringContains('Use <command> --help to get more infos about a command')],
+            );
 
-        $this->output->expects($this->at(3))->method('outputText')->with($this->stringContains('start'));
-        $this->output->expects($this->at(4))->method('outputText')->with($this->stringContains($this->shell->commandTree['start']['help']));
-
-        $this->output->expects($this->at(5))->method('outputText')->with($this->stringContains('stop'));
-        $this->output->expects($this->at(6))->method('outputText')->with($this->stringContains($this->shell->commandTree['stop']['help']));
-
-        $this->output->expects($this->exactly(4))->method('outputText');
+        $this->output
+            ->expects($this->exactly(4))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('start')],
+                [$this->stringContains($this->shell->commandTree['start']['help'])],
+                [$this->stringContains('stop')],
+                [$this->stringContains($this->shell->commandTree['stop']['help'])],
+            );
 
         $this->shell->help();
     }
@@ -412,9 +480,16 @@ class FresqueTest extends TestCase
     public function testPrintHelpWhenCallingUnhrecognizedCommand()
     {
         $this->shell->expects($this->once())->method('outputTitle')->with($this->equalTo('Welcome to Fresque'));
-        $this->output->expects($this->at(1))->method('outputLine')->with($this->stringContains('Unrecognized command : hello'));
 
-        $this->shell->commandTree = array();
+        $this->output
+            ->expects($this->atLeastOnce())
+            ->method('outputLine')
+            ->withConsecutive(
+                [],
+                [$this->stringContains('Unrecognized command : hello')],
+            );
+
+        $this->shell->commandTree = [];
         $this->shell->help('hello');
     }
 
@@ -429,8 +504,12 @@ class FresqueTest extends TestCase
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains($this->sendSignalOptions->title));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->stringContains($this->sendSignalOptions->noWorkersMessage));
-        $this->output->expects($this->exactly(2))->method('outputLine');
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->stringContains($this->sendSignalOptions->noWorkersMessage)],
+            );
 
         $this->shell->sendSignal($this->sendSignalOptions);
     }
@@ -446,9 +525,18 @@ class FresqueTest extends TestCase
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing workers'));
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('testing 100 ...'));
-        $this->output->expects($this->at(2))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->exactly(2))->method('outputLine');
+        $this->output
+            ->expects($this->exactly(1))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('testing 100 ...')],
+            );
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->willReturnOnConsecutiveCalls(
+                [$this->returnValue('done')],
+            );
 
         $this->shell->expects($this->once())->method('kill')->with($this->equalTo($this->sendSignalOptions->signal), $this->equalTo('100'))->will($this->returnValue(array('code' => 0, 'message' => '')));
 
@@ -469,9 +557,19 @@ class FresqueTest extends TestCase
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing workers'));
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('testing 100 ...'));
-        $this->output->expects($this->at(2))->method('outputLine')->will($this->returnValue('error message'));
-        $this->output->expects($this->exactly(2))->method('outputLine');
+
+        $this->output
+            ->expects($this->exactly(1))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('testing 100 ...')],
+            );
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->willReturnOnConsecutiveCalls(
+                [$this->returnValue('error message')],
+            );
 
         $this->shell->expects($this->once())->method('kill')
             ->with($this->equalTo($this->sendSignalOptions->signal), $this->equalTo('100'))
@@ -492,18 +590,27 @@ class FresqueTest extends TestCase
         $option = new \stdClass();
         $option->value = true;
 
-        $this->input->expects($this->at(0))->method('getOption')->with($this->equalTo('force'))->will($this->returnValue($option));
-        $this->input->expects($this->at(1))->method('getOption')->with($this->equalTo('all'))->will($this->returnValue($option));
-        $this->input->expects($this->exactly(2))->method('getOption');
-
+        $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing workers'));
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('testing 100 ...'));
-        $this->output->expects($this->at(1))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->at(2))->method('outputText')->with($this->stringContains('testing 101 ...'));
-        $this->output->expects($this->at(3))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->at(4))->method('outputText')->with($this->stringContains('testing 102 ...'));
-        $this->output->expects($this->at(5))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->exactly(4))->method('outputLine');
+
+        $this->output
+            ->expects($this->exactly(4))
+            ->method('outputLine')
+            ->willReturnOnConsecutiveCalls(
+                [],
+                [$this->returnValue('done')],
+                [$this->returnValue('done')],
+                [$this->returnValue('done')],
+            );
+
+        $this->output
+            ->expects($this->exactly(3))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('testing 100 ...')],
+                [$this->stringContains('testing 101 ...')],
+                [$this->stringContains('testing 102 ...')],
+            );
 
         $this->shell->expects($this->exactly(3))->method('kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
 
@@ -527,19 +634,38 @@ class FresqueTest extends TestCase
         $option->value = false;
 
         $this->shell->expects($this->once())->method('getUserChoice')->will($this->returnValue('all'));
-
-        $this->input->expects($this->at(0))->method('getOption')->with($this->equalTo('force'))->will($this->returnValue($option));
-        $this->input->expects($this->at(1))->method('getOption')->with($this->equalTo('all'))->will($this->returnValue($option));
-        $this->input->expects($this->exactly(2))->method('getOption');
-
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing workers'));
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('testing 100 ...'));
-        $this->output->expects($this->at(1))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->at(2))->method('outputText')->with($this->stringContains('testing 101 ...'));
-        $this->output->expects($this->at(3))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->at(4))->method('outputText')->with($this->stringContains('testing 102 ...'));
-        $this->output->expects($this->at(5))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->exactly(4))->method('outputLine');
+
+        $this->input
+            ->expects($this->exactly(2))
+            ->method('getOption')
+            ->withConsecutive(
+                [$this->equalTo('force')],
+                [$this->equalTo('all')],
+            )
+            ->willReturnOnConsecutiveCalls(
+                $this->returnValue($option),
+                $this->returnValue($option),
+            );
+
+        $this->output
+            ->expects($this->exactly(4))
+            ->method('outputLine')
+            ->willReturnOnConsecutiveCalls(
+                [],
+                $this->returnValue('done'),
+                $this->returnValue('done'),
+                $this->returnValue('done'),
+            );
+
+        $this->output
+            ->expects($this->exactly(3))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('testing 100 ...')],
+                [$this->stringContains('testing 101 ...')],
+                [$this->stringContains('testing 102 ...')],
+            );
 
         $this->shell->expects($this->exactly(3))->method('kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
 
@@ -564,15 +690,34 @@ class FresqueTest extends TestCase
 
         $this->shell->expects($this->once())->method('getUserChoice')->will($this->returnValue('2'));
 
-        $this->input->expects($this->at(0))->method('getOption')->with($this->equalTo('force'))->will($this->returnValue($option));
-        $this->input->expects($this->at(1))->method('getOption')->with($this->equalTo('all'))->will($this->returnValue($option));
-        $this->input->expects($this->exactly(2))->method('getOption');
+        $this->input
+            ->expects($this->exactly(2))
+            ->method('getOption')
+            ->withConsecutive(
+                [$this->equalTo('force')],
+                [$this->equalTo('all')],
+            )
+            ->willReturnOnConsecutiveCalls(
+                $this->returnValue($option),
+                $this->returnValue($option),
+            );
+
+        $this->output
+            ->expects($this->exactly(2))
+            ->method('outputLine')
+            ->willReturnOnConsecutiveCalls(
+                [],
+                $this->returnValue('done'),
+            );
+
+        $this->output
+            ->expects($this->exactly(1))
+            ->method('outputText')
+            ->withConsecutive(
+                [$this->stringContains('testing 101 ...')],
+            );
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing workers'));
-        $this->output->expects($this->at(0))->method('outputText')->with($this->stringContains('testing 101 ...'));
-        $this->output->expects($this->at(1))->method('outputLine')->will($this->returnValue('done'));
-        $this->output->expects($this->exactly(2))->method('outputLine');
-
         $this->shell->expects($this->exactly(1))->method('kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
 
         $this->sendSignalOptions->workers = array(
@@ -621,7 +766,7 @@ class FresqueTest extends TestCase
 
         $shell = $this->getMockBuilder('\Fresque\Fresque')->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'))->getMock();
         $shell->input = $this->input;
-        $shell->input->expects($this->at(0))->method('getOption')->with($this->equalTo('force'))->will($this->returnValue($option));
+        $shell->input->expects($this->once())->method('getOption')->with($this->equalTo('force'))->will($this->returnValue($option));
         $shell->ResqueStatus = $this->ResqueStatus = $this->createMock('\ResqueStatus\ResqueStatus');
 
         $shell->expects($this->once())->method('sendSignal')->with(
@@ -737,6 +882,17 @@ class FresqueTest extends TestCase
         $this->output->expects($this->at(22))->method('outputLine')->with($this->stringContains('processed jobs : ' . $datas[0]['processed']));
         $this->output->expects($this->at(23))->method('outputLine')->with($this->stringContains('failed jobs    : ' . $datas[0]['failed']));
 
+        $this->output->expects($this->at(7))->method('outputText')->with($this->stringContains($datas[0]['queue']));
+        $this->output->expects($this->at(7))->method('outputText')->with($this->stringContains('3 pending jobs'));
+        $this->output->expects($this->at(9))->method('outputText')->with($this->stringContains($datas[1]['queue']));
+        $this->output->expects($this->at(9))->method('outputText')->with($this->stringContains('10 pending jobs'));
+        $this->output->expects($this->at(11))->method('outputText')->with($this->stringContains('queue3'));
+        $this->output->expects($this->at(11))->method('outputText')->with($this->stringContains('9 pending jobs'));
+        $this->output->expects($this->at(12))->method('outputText')->with($this->stringContains('(unmonitored queue)'));
+
+        $this->output->expects($this->at(17))->method('outputText')->with($this->stringContains('worker : ' . (string)$workersList[0]));
+        $this->output->expects($this->at(18))->method('outputText')->with($this->stringContains('(paused)'));
+
         $this->output->expects($this->at(24))->method('outputText')->with($this->stringContains('worker : ' . (string)$workersList[1]));
         $this->output->expects($this->at(28))->method('outputLine')->with($this->stringContains('processed jobs : ' . $datas[1]['processed']));
         $this->output->expects($this->at(29))->method('outputLine')->with($this->stringContains('failed jobs    : ' . $datas[1]['failed']));
@@ -815,7 +971,7 @@ class FresqueTest extends TestCase
 
         $invalidOptions = $options;
         unset($invalidOptions['i']);
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->equalTo('Invalid options -' . implode(', -', array_keys($invalidOptions)) . ' will be ignored'));
+        $this->output->expects($this->once())->method('outputLine')->with($this->equalTo('Invalid options -' . implode(', -', array_keys($invalidOptions)) . ' will be ignored'));
 
         $this->shell->runtime = $this->startArgs;
         $this->shell->callCommand('start');
@@ -1037,9 +1193,14 @@ class FresqueTest extends TestCase
         $this->input->expects($this->once())->method('getOptionValues');
         $this->input->expects($this->any())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
         $this->shell->expects($this->once())->method('testConfig')->will($this->returnValue($errors));
-        $this->output->expects($this->at(0))->method('outputLine')->with($this->equalTo($errors['name1']));
-        $this->output->expects($this->at(1))->method('outputLine')->with($this->equalTo($errors['name2']));
-        $this->output->expects($this->at(2))->method('outputLine')->with();
+
+        $this->output
+            ->expects($this->exactly(3))
+            ->method('outputLine')
+            ->withConsecutive(
+                [$this->equalTo($errors['name1'])],
+                [$this->equalTo($errors['name2'])],
+            );
 
         $return = $this->shell->loadSettings('');
 

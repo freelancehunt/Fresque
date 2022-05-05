@@ -661,7 +661,7 @@ class Fresque
                 return sprintf(
                     '%s, started %s ago',
                     $ResqueStatus->isSchedulerWorker($worker) ? '**Scheduler Worker**' : $worker,
-                    $fresque->formatDateDiff(call_user_func_array([$resqueStats, 'getWorkerStartDate'], [$worker]))
+                    $fresque->formatDateDiff($resqueStats->getWorkerStartDate($worker)),
                 );
             };
         } else {
@@ -944,7 +944,7 @@ class Fresque
                 }
                 $this->output->outputText("\n");
 
-                $startDate = call_user_func_array([$this->ResqueStats, 'getWorkerStartDate'], [$worker]);
+                $startDate = $this->ResqueStats->getWorkerStartDate($worker);
 
                 $this->output->outputLine(
                     '     - Started on     : ' . $startDate
@@ -1322,35 +1322,40 @@ class Fresque
             return $nb > 1 ? $str . 's' : $str;
         };
 
-        $format = [];
+        $format_parts = [];
         if ($interval->y !== 0) {
-            $format[] = '%y ' . $doPlural($interval->y, 'year');
+            $format_parts[] = '%y ' . $doPlural($interval->y, 'year');
         }
         if ($interval->m !== 0) {
-            $format[] = '%m ' . $doPlural($interval->m, 'month');
+            $format_parts[] = '%m ' . $doPlural($interval->m, 'month');
         }
         if ($interval->d !== 0) {
-            $format[] = '%d ' . $doPlural($interval->d, 'day');
+            $format_parts[] = '%d ' . $doPlural($interval->d, 'day');
         }
         if ($interval->h !== 0) {
-            $format[] = '%h ' . $doPlural($interval->h, 'hour');
+            $format_parts[] = '%h ' . $doPlural($interval->h, 'hour');
         }
         if ($interval->i !== 0) {
-            $format[] = '%i ' . $doPlural($interval->i, 'minute');
+            $format_parts[] = '%i ' . $doPlural($interval->i, 'minute');
         }
         if ($interval->s !== 0) {
-            if (!count($format)) {
+            if (!count($format_parts)) {
                 return 'less than a minute';
             } else {
-                $format[] = '%s ' . $doPlural($interval->s, 'second');
+                $format_parts[] = '%s ' . $doPlural($interval->s, 'second');
             }
         }
 
+        // TODO: Can be sometimes, maybe just in tests, need to check it.
+        if (empty($format_parts)) {
+            return '-';
+        }
+
         // We use the two biggest parts
-        if (count($format) > 1) {
-            $format = array_shift($format) . ' and ' . array_shift($format);
+        if (count($format_parts) > 1) {
+            $format = array_shift($format_parts) . ' and ' . array_shift($format_parts);
         } else {
-            $format = array_pop($format);
+            $format = array_pop($format_parts);
         }
 
         // Prepend 'since ' or whatever you like
