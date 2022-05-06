@@ -24,23 +24,21 @@ use ezcConsoleOutput;
 use DateTime;
 
 define('DS', DIRECTORY_SEPARATOR);
-include __DIR__ . DS . 'DialogMenuValidator.php';
-include __DIR__ . DS . 'SendSignalCommandOptions.php';
-include __DIR__ . DS . 'ResqueStats.php';
 
 class Fresque
 {
     public ezcConsoleInput  $input;
     public ezcConsoleOutput $output;
 
-    public array $settings = [
+    public array        $settings = [
         'Default' => [
             'verbose' => false,
         ],
     ];
-    public array $runtime = [];
-    public array $commandTree;
-    public bool  $debug   = false;
+    public array       $runtime = [];
+    public array       $commandTree;
+    public bool        $debug   = false;
+    public null|string $config_file;
 
     public static $Resque        = \Resque::class;
     public static $Resque_Worker = \Resque_Worker::class;
@@ -51,7 +49,6 @@ class Fresque
     private const CHECK_STARTED_WORKER_BUFFER_TIME = 100000;
 
     private const VERSION = '2.0.0';
-
 
     public function __construct()
     {
@@ -745,10 +742,8 @@ class Fresque
         } else {
             $this->output->outputLine(sprintf('Loading %s workers', count($this->runtime['Queues'])));
 
-            $config = $this->config;
-
             foreach ($this->runtime['Queues'] as $queue) {
-                $queue['config'] = $config;
+                $queue['config'] = $this->config_file;
                 $queue['debug']  = $debug;
                 $this->loadSettings('load', $queue);
                 $this->start($this->runtime);
@@ -810,7 +805,7 @@ class Fresque
             }
             if ($worker['Log']['handler'] == 'RotatingFile') {
                 $fileInfo = pathinfo($worker['Log']['target']);
-                $pattern  = $fileInfo['dirname'] . DS . $fileInfo['filename'] . '-*' .
+                $pattern  = $fileInfo['dirname'] . '/' . $fileInfo['filename'] . '-*' .
                     (!empty($fileInfo['extension']) ? '.' . $fileInfo['extension'] : '');
 
                 $logs = array_merge($logs, glob($pattern));
@@ -1074,8 +1069,8 @@ class Fresque
         }
 
         try {
-            if (file_exists($this->runtime['Fresque']['lib'] . DS . 'lib' . DS . 'Resque' . DS . 'Redis.php')) {
-                require_once($this->runtime['Fresque']['lib'] . DS . 'lib' . DS . 'Resque' . DS . 'Redis.php');
+            if (file_exists($this->runtime['Fresque']['lib'] . '/lib/Resque/Redis.php')) {
+                require_once($this->runtime['Fresque']['lib'] . '/lib/Resque/Redis.php');
                 $redis = @new \Resque_Redis($this->runtime['Redis']['host'], (int) $this->runtime['Redis']['port']);
 
             } elseif (class_exists('Redis')) {
@@ -1124,16 +1119,16 @@ class Fresque
     {
         $options = ($args === null) ? $this->input->getOptionValues(true) : $args;
 
-        $this->config = isset($options['config']) ? $options['config'] : '.' . DS . 'fresque.ini';
-        if (!file_exists($this->config)) {
-            $this->output->outputLine("The config file '$this->config' was not found", 'failure');
+        $this->config_file = $options['config'] ?? './src/fresque.ini';
+        if (!file_exists($this->config_file)) {
+            $this->output->outputLine("The config file '$this->config_file' was not found", 'failure');
 
             return false;
         }
 
         $this->debug = isset($options['debug']) ? $options['debug'] : false;
 
-        $this->runtime = parse_ini_file($this->config, true);
+        $this->runtime = parse_ini_file($this->config_file, true);
 
         if (!isset($this->runtime['type'])) {
             $this->runtime['type'] = 'regular';
@@ -1405,21 +1400,22 @@ class Fresque
      * @return String Relative path to php-resque executable file
      * @since  1.1.6
      */
-    protected function getResqueBinFile($base)
+    protected function getResqueBinFile(string $base): string
     {
         $paths = [
-            'bin' . DS . 'resque',
-            'bin' . DS . 'resque.php',
+            'bin/resque',
+            'bin/resque.php',
+            'fresque',
             'resque.php',
         ];
 
         foreach ($paths as $path) {
-            if (file_exists($base . DS . $path)) {
-                return '.' . DS . $path;
+            if (file_exists($base . '/' . $path)) {
+                return './' . $path;
             }
         }
 
-        return '.' . DS . 'resque.php';
+        return './resque.php';
     }
 
     /**

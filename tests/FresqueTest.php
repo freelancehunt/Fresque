@@ -1,11 +1,13 @@
 <?php
-namespace Fresque\Test;
+
+namespace Tests;
 
 // Used to mock the filesystem
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Fresque\ResqueStatus;
 use Fresque\Fresque;
+use Fresque\ResqueStats;
 
 class FresqueTest extends TestCase
 {
@@ -21,7 +23,7 @@ class FresqueTest extends TestCase
         $this->shell->input = $this->input;
 
         $this->shell->ResqueStatus = $this->ResqueStatus = $this->createMock(ResqueStatus::class);
-        $this->shell->ResqueStats = $this->ResqueStats = $this->getMockBuilder('\Fresque\ResqueStats')->disableOriginalConstructor()->getMock();
+        $this->shell->ResqueStats = $this->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
         $this->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
         $this->startArgs = array(
@@ -377,7 +379,7 @@ class FresqueTest extends TestCase
             );
 
         $this->shell->ResqueStatus = $this->ResqueStatus;
-        $this->shell->config = '';
+        $this->shell->config_file = '';
         $queue = array(
             'name' => 'default',
             'config' => '',
@@ -864,7 +866,7 @@ class FresqueTest extends TestCase
         ];
 
         $this->shell->ResqueStatus = $this->createMock(ResqueStatus::class);
-        $this->shell->ResqueStats = $this->getMockBuilder('\Fresque\ResqueStats')->disableOriginalConstructor()->getMock();
+        $this->shell->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
         $this->shell->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Resque statistics'));
@@ -1036,7 +1038,7 @@ class FresqueTest extends TestCase
 
         $this->shell->loadSettings('');
 
-        $this->assertEquals('./fresque.ini', $this->shell->config);
+        $this->assertEquals('./src/fresque.ini', $this->shell->config_file);
     }
 
     /**
@@ -1054,7 +1056,7 @@ class FresqueTest extends TestCase
 
         $return = $this->shell->loadSettings('', array('config' => $iniFile));
 
-        $this->assertEquals($iniFile, $this->shell->config);
+        $this->assertEquals($iniFile, $this->shell->config_file);
         $this->assertEquals(false, $return);
     }
 
@@ -1075,7 +1077,7 @@ class FresqueTest extends TestCase
 
         $return = $this->shell->loadSettings('');
 
-        $this->assertEquals($iniFile, $this->shell->config);
+        $this->assertEquals($iniFile, $this->shell->config_file);
         $this->assertEquals(false, $return);
     }
 
@@ -1255,14 +1257,16 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsSetupQueuesForLoadCommand()
     {
+        $config_file = __DIR__ . '/test_fresque.ini';
+
         $option = new \stdClass();
         $option->value = false;
-        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue(array('config' => __DIR__ . DS . 'test_fresque.ini')));
+        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue(array('config' => $config_file)));
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
 
         $return = $this->shell->loadSettings('');
 
-        $config = parse_ini_file(__DIR__ . DS . 'test_fresque.ini', true);
+        $config = parse_ini_file($config_file, true);
 
         $config['Queues']['activity']['queue'] = 'activity';
 

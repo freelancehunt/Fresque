@@ -23,6 +23,16 @@
     }
   ],
   "license": "MIT",
+  "autoload": {
+    "psr-0": {
+      "Fresque": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": ">=8.1",
     "ext-posix": "*",
@@ -47,6 +57,7 @@
     "source": "https://github.com/freelancehunt/fresque"
   },
   "bin": [
-    "fresque"
+    "bin/resque",
+    "bin/fresque"
   ]
 }

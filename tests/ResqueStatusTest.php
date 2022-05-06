@@ -1,7 +1,10 @@
 <?php
 
+namespace Tests;
+
 use PHPUnit\Framework\TestCase;
 use Fresque\ResqueStatus;
+use Redis;
 
 class ResqueStatusTest extends TestCase
 {
