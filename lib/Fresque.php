@@ -19,7 +19,6 @@
 
 namespace Fresque;
 
-use ResqueStatus\ResqueStatus;
 use ezcConsoleInput;
 use ezcConsoleOutput;
 use DateTime;
@@ -587,7 +586,7 @@ class Fresque
                 return $worker = (string) $worker;
             }
         );
-        $pausedWorkers = call_user_func([$this->ResqueStatus, 'getPausedWorker']);
+        $pausedWorkers = call_user_func([$this->ResqueStatus, 'getPausedWorkers']);
 
         $this->debug('Searching for active workers');
         $options                               = new SendSignalCommandOptions();
@@ -622,7 +621,7 @@ class Fresque
         $options->allOption                    = 'Resume all workers';
         $options->selectMessage                = 'Worker to resume';
         $options->actionMessage                = 'resuming';
-        $options->workers                      = call_user_func([$this->ResqueStatus, 'getPausedWorker']);
+        $options->workers                      = call_user_func([$this->ResqueStatus, 'getPausedWorkers']);
         $options->signal                       = 'CONT';
         $options->successCallback              = function ($pid, $workerName) use ($ResqueStatus) {
             $ResqueStatus->setPausedWorker($workerName, false);
@@ -665,7 +664,7 @@ class Fresque
                 );
             };
         } else {
-            $listFormatter = $option->formatListItem;
+            $listFormatter = $options->formatListItem;
         }
 
         if (empty($options->workers)) {
@@ -930,7 +929,7 @@ class Fresque
 
         if (!empty($workers)) {
 
-            $pausedWorkers = call_user_func([$this->ResqueStatus, 'getPausedWorker']);
+            $pausedWorkers = call_user_func([$this->ResqueStatus, 'getPausedWorkers']);
 
             foreach ($workers as $worker) {
                 if ($this->runtime['Scheduler']['enabled'] === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
