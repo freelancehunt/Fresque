@@ -1,27 +1,12 @@
 <?php
-/**
- * Fresque Class File
- *
- * PHP 5
- *
- * Licensed under The MIT License
- * Redistributions of files must retain the above copyright notice.
- *
- * @link       https://github.com/kamisama/Fresque
- * @since      0.1.0
- * @package    Fresque
- * @subpackage Fresque.lib
- * @author     Wan Qi Chen <kami@kamisama.me>
- * @copyright  Copyright 2012, Wan Qi Chen <kami@kamisama.me>
- *
- * @license    MIT License (http://www.opensource.org/licenses/mit-license.php)
- */
 
 namespace Fresque;
 
 use ezcConsoleInput;
 use ezcConsoleOutput;
 use DateTime;
+use Resque\Resque;
+use Resque\Worker;
 
 define('DS', DIRECTORY_SEPARATOR);
 
@@ -30,18 +15,18 @@ class Fresque
     public ezcConsoleInput  $input;
     public ezcConsoleOutput $output;
 
-    public array        $settings = [
+    public array       $settings = [
         'Default' => [
             'verbose' => false,
         ],
     ];
-    public array       $runtime = [];
+    public array       $runtime  = [];
     public array       $commandTree;
-    public bool        $debug   = false;
+    public bool        $debug    = false;
     public null|string $config_file;
 
-    public static $Resque        = \Resque::class;
-    public static $Resque_Worker = \Resque_Worker::class;
+    public static string $Resque        = Resque::class;
+    public static string $Resque_Worker = Worker::class;
 
     public ResqueStatus|null $ResqueStatus = null;
     public ResqueStats|null  $ResqueStats  = null;
@@ -393,11 +378,6 @@ class Fresque
                     );
                 }
                 $this->setResqueBackend();
-
-                if ($this->runtime['Scheduler']['enabled'] === true) {
-                    require_once realpath($this->runtime['Scheduler']['lib'] . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'ResqueScheduler.php');
-                    require_once realpath($this->runtime['Scheduler']['lib'] . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Stat.php');
-                }
 
                 $this->ResqueStatus = $this->initResqueStatus();
                 $this->ResqueStats  = $this->initResqueStats();
@@ -970,7 +950,7 @@ class Fresque
                 $this->output->outputLine('    - Delayed Jobs    : ' . number_format($delayedJobCount));
 
                 if ($delayedJobCount > 0) {
-                    $this->output->outputLine('    - Next Job on     : ' . strftime('%a %b %d %H:%M:%S %Z %Y', $schedulerWorker->nextDelayedTimestamp()));
+                    $this->output->outputLine('    - Next Job on     : ' . date('D M d H:i:s T Y', $schedulerWorker->nextDelayedTimestamp()));
                 }
             }
             $this->output->outputLine("\n");
@@ -1069,18 +1049,8 @@ class Fresque
         }
 
         try {
-            if (file_exists($this->runtime['Fresque']['lib'] . '/lib/Resque/Redis.php')) {
-                require_once($this->runtime['Fresque']['lib'] . '/lib/Resque/Redis.php');
-                $redis = @new \Resque_Redis($this->runtime['Redis']['host'], (int) $this->runtime['Redis']['port']);
-
-            } elseif (class_exists('Redis')) {
-                $redis = new \Redis();
-                @$redis->connect($this->runtime['Redis']['host'], (int) $this->runtime['Redis']['port']);
-            } elseif (class_exists('Redisent')) {
-                $redis = @new \Redisent($this->runtime['Redis']['host'], (int) $this->runtime['Redis']['port']);
-            } else {
-                $results['Redis server'] = 'Unable to find Redis Api';
-            }
+            $redis = new \Redis();
+            $redis->connect($this->runtime['Redis']['host'], (int) $this->runtime['Redis']['port']);
         } catch (\RedisException $e) {
             $results['Redis server'] = 'Unable to connect to Redis server at '
                 . $this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port'];
@@ -1340,11 +1310,6 @@ class Fresque
             }
         }
 
-        // TODO: Can be sometimes, maybe just in tests, need to check it.
-        if (empty($format_parts)) {
-            return '-';
-        }
-
         // We use the two biggest parts
         if (count($format_parts) > 1) {
             $format = array_shift($format_parts) . ' and ' . array_shift($format_parts);
@@ -1365,9 +1330,9 @@ class Fresque
      */
     private function absolutePath($path)
     {
-        if (substr($path, 0, 2) === './') {
+        if (str_starts_with($path, './')) {
             $path = dirname(__DIR__) . DS . substr($path, 2);
-        } elseif (substr($path, 0, 1) !== '/' || substr($path, 0, 3) === '../') {
+        } elseif (!str_starts_with($path, '/') || str_starts_with($path, '../')) {
             $path = dirname(__DIR__) . DS . $path;
         }
 
@@ -1565,12 +1530,12 @@ class Fresque
 
     protected function initResqueStatus(): ResqueStatus
     {
-        return new ResqueStatus(\Resque::Redis());
+        return new ResqueStatus(Resque::Redis());
     }
 
     protected function initResqueStats(): ResqueStats
     {
-        return new ResqueStats(\Resque::Redis());
+        return new ResqueStats(Resque::Redis());
     }
 
     protected function getResqueStat($value): int

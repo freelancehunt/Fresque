@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Tests\Fresque;
 
 use PHPUnit\Framework\TestCase;
 use Fresque\ResqueStatus;
@@ -18,10 +18,10 @@ class ResqueStatusTest extends TestCase
 
         $this->ResqueStatus = new ResqueStatus($this->redis);
 
-        $this->workers = array();
-        $this->workers[100] = new Worker('One:100:queue5', 5);
-        $this->workers[101] = new Worker('Two:101:queue1', 10);
-        $this->workers[102] = new Worker('Three:102:schedulerWorker', 145);
+        $this->workers      = [];
+        $this->workers[100] = new StatusDummyWorker('One:100:queue5', 5);
+        $this->workers[101] = new StatusDummyWorker('Two:101:queue1', 10);
+        $this->workers[102] = new StatusDummyWorker('Three:102:schedulerWorker', 145);
     }
 
     protected function tearDown(): void
@@ -37,10 +37,10 @@ class ResqueStatusTest extends TestCase
      */
     public function testAddWorker()
     {
-        $workers = array(
-            "0125" => array('name' => 'WorkerZero'),
-            "6523" => array('name' => 'workerOne', 'debug' => true)
-        );
+        $workers = [
+            "0125" => ['name' => 'WorkerZero'],
+            "6523" => ['name' => 'workerOne', 'debug' => true],
+        ];
         $this->redis->hSet(ResqueStatus::WORKER_KEY, "0125", serialize($workers["0125"]));
 
         $res = $this->ResqueStatus->addWorker(6523, $workers["6523"]);
@@ -160,7 +160,7 @@ class ResqueStatusTest extends TestCase
      */
     public function testSetActiveWorker()
     {
-        $workers = array('workerOne', 'workerTwo');
+        $workers = ['workerOne', 'workerTwo'];
 
         $this->redis->sAdd(ResqueStatus::PAUSED_WORKER_KEY, $workers[0]);
         $this->redis->sAdd(ResqueStatus::PAUSED_WORKER_KEY, $workers[1]);
@@ -169,7 +169,7 @@ class ResqueStatusTest extends TestCase
 
         $pausedWorkers = $this->redis->sMembers(ResqueStatus::PAUSED_WORKER_KEY);
         $this->assertCount(1, $pausedWorkers);
-        $this->assertEquals(array($workers[1]), $pausedWorkers);
+        $this->assertEquals([$workers[1]], $pausedWorkers);
     }
 
     /**
@@ -177,7 +177,7 @@ class ResqueStatusTest extends TestCase
      */
     public function testGetPausedWorker()
     {
-        $workers = array('workerOne', 'workerTwo');
+        $workers = ['workerOne', 'workerTwo'];
 
         $this->redis->sAdd(ResqueStatus::PAUSED_WORKER_KEY, $workers[0]);
         $this->redis->sAdd(ResqueStatus::PAUSED_WORKER_KEY, $workers[1]);
@@ -197,7 +197,7 @@ class ResqueStatusTest extends TestCase
      */
     public function testGetPausedWorkerWhenThereIsNoPausedWorkers()
     {
-        $this->assertEquals(array(), $this->ResqueStatus->getPausedWorkers());
+        $this->assertEquals([], $this->ResqueStatus->getPausedWorkers());
     }
 
     /**
@@ -234,7 +234,7 @@ class ResqueStatusTest extends TestCase
     }
 }
 
-class Worker
+class StatusDummyWorker
 {
     public $name;
 
@@ -242,7 +242,7 @@ class Worker
 
     public function __construct($name, $interval)
     {
-        $this->name = $name;
+        $this->name     = $name;
         $this->interval = $interval;
     }
 

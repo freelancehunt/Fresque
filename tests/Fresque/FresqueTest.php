@@ -1,74 +1,78 @@
 <?php
 
-namespace Tests;
+namespace Tests\Fresque;
 
-// Used to mock the filesystem
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Fresque\ResqueStatus;
 use Fresque\Fresque;
 use Fresque\ResqueStats;
+use ezcConsoleOutput;
+use ezcConsoleInput;
+use ReflectionMethod;
+use Fresque\SendSignalCommandOptions;
+use stdClass;
 
 class FresqueTest extends TestCase
 {
     protected function setUp(): void
     {
-        $_SERVER['argv'] = array();
+        $_SERVER['argv'] = [];
 
-        $this->output = $this->createMock('\ezcConsoleOutput');
-        $this->input = $this->createMock('\ezcConsoleInput');
+        $this->output = $this->createMock(ezcConsoleOutput::class);
+        $this->input  = $this->createMock(ezcConsoleInput::class);
 
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'testConfig', 'enqueueJob', 'getResqueStat'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'outputTitle', 'kill', 'getUserChoice', 'testConfig', 'enqueueJob', 'getResqueStat'])->getMock();
         $this->shell->output = $this->output;
-        $this->shell->input = $this->input;
+        $this->shell->input  = $this->input;
 
         $this->shell->ResqueStatus = $this->ResqueStatus = $this->createMock(ResqueStatus::class);
-        $this->shell->ResqueStats = $this->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
+        $this->shell->ResqueStats  = $this->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
         $this->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
-        $this->startArgs = array(
+        $this->startArgs = [
 
-            'Default'   => array(
+            'Default'   => [
                 'queue'    => 'default',
                 'workers'  => 1,
                 'interval' => 5,
                 'verbose'  => true,
                 'user'     => '',
-            ),
-            'Fresque'   => array(
+            ],
+            'Fresque'   => [
                 'lib'     => '',
                 'include' => '',
-            ),
-            'Redis'     => array(
+            ],
+            'Redis'     => [
                 'host'      => '',
                 'database'  => 0,
                 'password'  => null,
                 'port'      => 0,
                 'namespace' => '',
-            ),
-            'Log'       => array(
+            ],
+            'Log'       => [
                 'handler'  => '',
                 'target'   => '',
                 'filename' => '',
-            ),
-            'Scheduler' => array(
+            ],
+            'Scheduler' => [
                 'enabled' => false,
                 'lib'     => './vendor/kamisama/phhp-resque-ex-scheduler',
                 'log'     => '',
-            ),
-        );
+            ],
+        ];
 
-        $this->sendSignalOptions = new \Fresque\SendSignalCommandOptions();
+        $this->sendSignalOptions = new SendSignalCommandOptions();
 
-        $this->sendSignalOptions->title = 'Testing workers';
+        $this->sendSignalOptions->title            = 'Testing workers';
         $this->sendSignalOptions->noWorkersMessage = 'There is no workers to test';
-        $this->sendSignalOptions->allOption = 'Test all workers';
-        $this->sendSignalOptions->selectMessage = 'Worker to test';
-        $this->sendSignalOptions->actionMessage = 'testing';
-        $this->sendSignalOptions->listTitle = 'list of workers to test';
-        $this->sendSignalOptions->workers = array();
-        $this->sendSignalOptions->signal = 'TEST';
-        $this->sendSignalOptions->successCallback = function ($pid) {
+        $this->sendSignalOptions->allOption        = 'Test all workers';
+        $this->sendSignalOptions->selectMessage    = 'Worker to test';
+        $this->sendSignalOptions->actionMessage    = 'testing';
+        $this->sendSignalOptions->listTitle        = 'list of workers to test';
+        $this->sendSignalOptions->workers          = [];
+        $this->sendSignalOptions->signal           = 'TEST';
+        $this->sendSignalOptions->successCallback  = function ($pid) {
         };
     }
 
@@ -109,7 +113,7 @@ class FresqueTest extends TestCase
      */
     public function testGetResqueBin()
     {
-        $method = new \ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
         $method->setAccessible(true);
 
         $root = vfsStream::setup('resque');
@@ -130,7 +134,7 @@ class FresqueTest extends TestCase
      */
     public function testGetResqueBinWithExtension()
     {
-        $method = new \ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
         $method->setAccessible(true);
 
         $root = vfsStream::setup('resque');
@@ -150,7 +154,7 @@ class FresqueTest extends TestCase
      */
     public function testGetResqueBinFallbtestStopWhenNoWorkersackInRoot()
     {
-        $method = new \ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
         $method->setAccessible(true);
 
         $root = vfsStream::setup('resque');
@@ -176,7 +180,7 @@ class FresqueTest extends TestCase
                 [$this->equalTo(str_repeat('-', strlen($title)))]
             );
 
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand'])->getMock();
         $this->shell->output = $this->output;
         $this->shell->outputTitle($title);
     }
@@ -192,7 +196,7 @@ class FresqueTest extends TestCase
         $title = 'my first title';
         $this->output->expects($this->exactly(1))->method('outputLine')->with($this->equalTo($title), $this->equalTo('subtitle'));
 
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand'])->getMock();
         $this->shell->output = $this->output;
         $this->shell->outputTitle($title, false);
     }
@@ -205,7 +209,7 @@ class FresqueTest extends TestCase
      */
     public function testStart()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'exec', 'checkStartedWorker', 'getProcessOwner'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'outputTitle', 'exec', 'checkStartedWorker', 'getProcessOwner'])->getMock();
         $this->shell->output = $this->output;
 
         $this->shell->expects($this->never())->method('outputTitle');
@@ -230,7 +234,7 @@ class FresqueTest extends TestCase
                 [$this->stringContains('.')],
             );
 
-        $this->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(array('isRunningSchedulerWorker', 'addWorker'))->getMock();
+        $this->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(['isRunningSchedulerWorker', 'addWorker'])->getMock();
 
         $this->ResqueStatus->expects($this->once())->method('addWorker');
         $this->shell->ResqueStatus = $this->ResqueStatus;
@@ -244,8 +248,9 @@ class FresqueTest extends TestCase
      * @covers \Fresque\Fresque::startScheduler
      * @return void
      */
-    public function testStartScheduler() {
-        $this->shell = $this->getMockBuilder(Fresque::class)
+    public function testStartScheduler()
+    {
+        $this->shell         = $this->getMockBuilder(Fresque::class)
             ->onlyMethods(['callCommand', 'outputTitle', 'exec', 'checkStartedWorker', 'getProcessOwner'])
             ->getMock();
         $this->shell->output = $this->output;
@@ -291,11 +296,11 @@ class FresqueTest extends TestCase
 
     public function testRestartWhenNoStartedWorkers()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'start', 'stop', 'outputTitle'))->getMock();
-        $this->shell->output = $this->output;
+        $this->shell               = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'start', 'stop', 'outputTitle'])->getMock();
+        $this->shell->output       = $this->output;
         $this->shell->ResqueStatus = $this->ResqueStatus;
 
-        $this->ResqueStatus->expects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+        $this->ResqueStatus->expects($this->once())->method('getWorkers')->will($this->returnValue([]));
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('restarting workers'));
 
         $this->output
@@ -313,10 +318,10 @@ class FresqueTest extends TestCase
 
     public function testRestart()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'start', 'stop', 'outputTitle'))->getMock();
-        $this->shell->output = $this->output;
+        $this->shell               = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'start', 'stop', 'outputTitle'])->getMock();
+        $this->shell->output       = $this->output;
         $this->shell->ResqueStatus = $this->ResqueStatus;
-        $workers = array(0, 1);
+        $workers                   = [0, 1];
 
         $this->ResqueStatus->expects($this->once())->method('getWorkers')->will($this->returnValue($workers));
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('restarting workers'));
@@ -339,10 +344,10 @@ class FresqueTest extends TestCase
      */
     public function testLoadWhenNothingToLoad()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'start', 'stop', 'outputTitle'))->getMock();
-        $this->shell->output = $this->output;
+        $this->shell               = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'start', 'stop', 'outputTitle'])->getMock();
+        $this->shell->output       = $this->output;
         $this->shell->ResqueStatus = $this->ResqueStatus;
-        $workers = array(0, 1);
+        $workers                   = [0, 1];
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Loading predefined workers'));
 
@@ -353,8 +358,8 @@ class FresqueTest extends TestCase
                 [$this->stringContains('You have no configured workers to load')],
             );
 
-        $this->shell->ResqueStatus = $this->ResqueStatus;
-        $this->shell->runtime['Queues'] = array();
+        $this->shell->ResqueStatus                    = $this->ResqueStatus;
+        $this->shell->runtime['Queues']               = [];
         $this->shell->runtime['Scheduler']['enabled'] = false;
 
         $this->shell->load();
@@ -362,11 +367,11 @@ class FresqueTest extends TestCase
 
     public function testLoad()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'start', 'stop', 'outputTitle', 'loadSettings'))->getMock();
+        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'start', 'stop', 'outputTitle', 'loadSettings'])->getMock();
 
-        $this->shell->output = $this->output;
+        $this->shell->output       = $this->output;
         $this->shell->ResqueStatus = $this->ResqueStatus;
-        $workers = array(0, 1);
+        $workers                   = [0, 1];
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Loading predefined workers'));
         $this->shell->expects($this->exactly(2))->method('start');
@@ -378,14 +383,14 @@ class FresqueTest extends TestCase
                 [$this->stringContains('Loading 2 workers')],
             );
 
-        $this->shell->ResqueStatus = $this->ResqueStatus;
-        $this->shell->config_file = '';
-        $queue = array(
-            'name' => 'default',
+        $this->shell->ResqueStatus                    = $this->ResqueStatus;
+        $this->shell->config_file                     = '';
+        $queue                                        = [
+            'name'   => 'default',
             'config' => '',
-            'debug' => false
-        );
-        $this->shell->runtime['Queues'] = array($queue, $queue);
+            'debug'  => false,
+        ];
+        $this->shell->runtime['Queues']               = [$queue, $queue];
         $this->shell->runtime['Scheduler']['enabled'] = false;
         $this->shell->load();
     }
@@ -419,10 +424,10 @@ class FresqueTest extends TestCase
      */
     public function testEnqueueJob()
     {
-        $id = md5(time());
-        $job = array('queue', 'class');
+        $id  = md5(time());
+        $job = ['queue', 'class'];
 
-        $this->shell->expects($this->once())->method('enqueueJob')->with($this->equalTo($job[0]), $this->equalTo($job[1]), $this->equalTo(array()))->will($this->returnValue($id));
+        $this->shell->expects($this->once())->method('enqueueJob')->with($this->equalTo($job[0]), $this->equalTo($job[1]), $this->equalTo([]))->will($this->returnValue($id));
         $this->input->expects($this->once())->method('getArguments')->will($this->returnValue($job));
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Queuing a job'));
@@ -447,15 +452,15 @@ class FresqueTest extends TestCase
     public function testHelp()
     {
         $this->shell->expects($this->once())->method('outputTitle')->with($this->equalTo('Welcome to Fresque'));
-        $this->shell->commandTree = array(
-            'start' => array(
-                    'help' => 'Start a new worker',
-                    'options' => array('u' => 'username', 'q' => 'queue name',
-                            'i' => 'num', 'n' => 'num', 'l' => 'path', 'v', 'g')),
-            'stop' => array(
-                    'help' => 'Shutdown all workers',
-                    'options' => array('f', 'w', 'g'))
-        );
+        $this->shell->commandTree = [
+            'start' => [
+                'help'    => 'Start a new worker',
+                'options' => ['u' => 'username', 'q' => 'queue name',
+                              'i' => 'num', 'n' => 'num', 'l' => 'path', 'v', 'g']],
+            'stop'  => [
+                'help'    => 'Shutdown all workers',
+                'options' => ['f', 'w', 'g']],
+        ];
 
         $this->output
             ->expects($this->exactly(4))
@@ -479,7 +484,6 @@ class FresqueTest extends TestCase
 
         $this->shell->help();
     }
-
 
     /**
      * Printing help message when calling a unrecognized command
@@ -509,7 +513,7 @@ class FresqueTest extends TestCase
      */
     public function testSendSignalWhenNoWorkers()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
 
@@ -530,7 +534,7 @@ class FresqueTest extends TestCase
      */
     public function testSendSignalWhenOnlyOneWorker()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
 
@@ -548,9 +552,9 @@ class FresqueTest extends TestCase
                 [$this->returnValue('done')],
             );
 
-        $this->shell->expects($this->once())->method('kill')->with($this->equalTo($this->sendSignalOptions->signal), $this->equalTo('100'))->will($this->returnValue(array('code' => 0, 'message' => '')));
+        $this->shell->expects($this->once())->method('kill')->with($this->equalTo($this->sendSignalOptions->signal), $this->equalTo('100'))->will($this->returnValue(['code' => 0, 'message' => '']));
 
-        $this->sendSignalOptions->workers = array('host:100:queue');
+        $this->sendSignalOptions->workers = ['host:100:queue'];
 
         $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
@@ -562,7 +566,7 @@ class FresqueTest extends TestCase
      */
     public function testSendSignalDisplayErrorMessageOnFail()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
 
@@ -583,9 +587,9 @@ class FresqueTest extends TestCase
 
         $this->shell->expects($this->once())->method('kill')
             ->with($this->equalTo($this->sendSignalOptions->signal), $this->equalTo('100'))
-            ->will($this->returnValue(array('code' => 1, 'message' => 'Error message')));
+            ->will($this->returnValue(['code' => 1, 'message' => 'Error message']));
 
-        $this->sendSignalOptions->workers = array('host:100:queue');
+        $this->sendSignalOptions->workers = ['host:100:queue'];
 
         $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
@@ -597,7 +601,7 @@ class FresqueTest extends TestCase
      */
     public function testSendSignalToAllWorkersWithAllOption()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = true;
 
         $this->input->expects($this->exactly(2))->method('getOption')->will($this->returnValue($option));
@@ -622,13 +626,13 @@ class FresqueTest extends TestCase
                 [$this->stringContains('testing 102 ...')],
             );
 
-        $this->shell->expects($this->exactly(3))->method('kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
+        $this->shell->expects($this->exactly(3))->method('kill')->will($this->returnValue(['code' => 0, 'message' => '']));
 
-        $this->sendSignalOptions->workers = array(
+        $this->sendSignalOptions->workers = [
             'host:100:queue',
             'host:101:queue',
-            'host:102:queue'
-        );
+            'host:102:queue',
+        ];
 
         $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
@@ -640,7 +644,7 @@ class FresqueTest extends TestCase
      */
     public function testSendSignalToAllWorkersWithAllInput()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
 
         $this->shell->expects($this->once())->method('getUserChoice')->will($this->returnValue('all'));
@@ -677,13 +681,13 @@ class FresqueTest extends TestCase
                 [$this->stringContains('testing 102 ...')],
             );
 
-        $this->shell->expects($this->exactly(3))->method('kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
+        $this->shell->expects($this->exactly(3))->method('kill')->will($this->returnValue(['code' => 0, 'message' => '']));
 
-        $this->sendSignalOptions->workers = array(
+        $this->sendSignalOptions->workers = [
             'host:100:queue',
             'host:101:queue',
-            'host:102:queue'
-        );
+            'host:102:queue',
+        ];
 
         $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
@@ -695,7 +699,7 @@ class FresqueTest extends TestCase
      */
     public function testSendSignalToOneWorkerWhenMultipleWorker()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
 
         $this->shell->expects($this->once())->method('getUserChoice')->will($this->returnValue('2'));
@@ -728,18 +732,17 @@ class FresqueTest extends TestCase
             );
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing workers'));
-        $this->shell->expects($this->exactly(1))->method('kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
+        $this->shell->expects($this->exactly(1))->method('kill')->will($this->returnValue(['code' => 0, 'message' => '']));
 
-        $this->sendSignalOptions->workers = array(
+        $this->sendSignalOptions->workers = [
             'host:100:queue',
             'host:101:queue',
-            'host:102:queue'
-        );
+            'host:102:queue',
+        ];
 
         $this->shell->runtime = $this->startArgs;
         $this->shell->sendSignal($this->sendSignalOptions);
     }
-
 
     /**
      * Stop will send the QUIT signal and the active workers list to sendSignal()
@@ -748,10 +751,10 @@ class FresqueTest extends TestCase
      */
     public function testStop()
     {
-        $shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'))->getMock();
+        $shell               = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'])->getMock();
         $shell->ResqueStatus = $this->ResqueStatus = $this->createMock(ResqueStatus::class);
 
-        $workers = array('test', 'testOne');
+        $workers = ['test', 'testOne'];
 
         $shell->expects($this->once())->method('sendSignal')->with(
             $this->callback(function ($options) use ($workers) {
@@ -771,10 +774,10 @@ class FresqueTest extends TestCase
      */
     public function testForceStop()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = true;
 
-        $shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'))->getMock();
+        $shell        = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'])->getMock();
         $shell->input = $this->input;
         $shell->input->expects($this->once())->method('getOption')->with($this->equalTo('force'))->will($this->returnValue($option));
         $shell->ResqueStatus = $this->ResqueStatus = $this->createMock(ResqueStatus::class);
@@ -797,11 +800,11 @@ class FresqueTest extends TestCase
      */
     public function testPause()
     {
-        $shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'))->getMock();
-        $shell->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(array('getPausedWorkers'))->getMock();
-        $shell->ResqueStatus->expects($this->once())->method('getPausedWorkers')->will($this->returnValue(array()));
+        $shell               = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal', 'getActiveWorkers'])->getMock();
+        $shell->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(['getPausedWorkers'])->getMock();
+        $shell->ResqueStatus->expects($this->once())->method('getPausedWorkers')->will($this->returnValue([]));
 
-        $workers = array('test', 'testOne');
+        $workers = ['test', 'testOne'];
 
         $shell->expects($this->once())->method('sendSignal')->with(
             $this->callback(function ($options) use ($workers) {
@@ -821,10 +824,10 @@ class FresqueTest extends TestCase
      */
     public function testResume()
     {
-        $workers = array('test', 'testOne');
+        $workers = ['test', 'testOne'];
 
-        $shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal'))->getMock();
-        $shell->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(array('getPausedWorkers'))->getMock();
+        $shell               = $this->getMockBuilder(Fresque::class)->onlyMethods(['callCommand', 'outputTitle', 'kill', 'getUserChoice', 'sendSignal'])->getMock();
+        $shell->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(['getPausedWorkers'])->getMock();
         $shell->ResqueStatus->expects($this->once())->method('getPausedWorkers')->will($this->returnValue($workers));
 
         $shell->expects($this->once())->method('sendSignal')->with(
@@ -836,28 +839,27 @@ class FresqueTest extends TestCase
         $shell->resume();
     }
 
-
     /**
      * @covers \Fresque\Fresque::stats
      */
     public function testStats()
     {
-        $datas = array(
-            array(
-                'host' => 'w1',
-                'pid' => 0,
-                'queue' => 'queue1',
+        $datas = [
+            [
+                'host'      => 'w1',
+                'pid'       => 0,
+                'queue'     => 'queue1',
                 'processed' => 15,
-                'failed' => 0
-            ),
-            array(
-                'host' => 'w2',
-                'pid' => 0,
-                'queue' => 'queue2',
+                'failed'    => 0,
+            ],
+            [
+                'host'      => 'w2',
+                'pid'       => 0,
+                'queue'     => 'queue2',
                 'processed' => 9,
-                'failed' => 5
-            )
-        );
+                'failed'    => 5,
+            ],
+        ];
 
         $queueList  = ['queue1', 'queue2', 'queue3', 'queue4'];
         $workerList = [
@@ -866,7 +868,7 @@ class FresqueTest extends TestCase
         ];
 
         $this->shell->ResqueStatus = $this->createMock(ResqueStatus::class);
-        $this->shell->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
+        $this->shell->ResqueStats  = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
         $this->shell->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Resque statistics'));
@@ -915,10 +917,10 @@ class FresqueTest extends TestCase
                 [$this->logicalAnd($this->stringContains('queue3'), $this->stringContains('9 pending jobs'))],
                 [$this->stringContains('(unmonitored queue)')],
                 [],
-                [$this->stringContains('worker : ' . (string)$workerList[0])],
+                [$this->stringContains('worker : ' . (string) $workerList[0])],
                 [$this->stringContains('(paused)')],
                 [],
-                [$this->stringContains('worker : ' . (string)$workerList[1])],
+                [$this->stringContains('worker : ' . (string) $workerList[1])],
             );
 
         $this->shell->runtime = $this->startArgs;
@@ -950,16 +952,16 @@ class FresqueTest extends TestCase
      */
     public function testCallCommandWithValidCommand()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('start', 'help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['start', 'help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'])->getMock();
         $this->shell->output = $this->output;
-        $this->shell->input = $this->input;
+        $this->shell->input  = $this->input;
 
-        $helpOptions = new \stdClass();
+        $helpOptions        = new stdClass();
         $helpOptions->value = false;
 
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('help'))->will($this->returnValue($helpOptions));
 
-        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue(array()));
+        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue([]));
         $this->shell->expects($this->once())->method('start');
         $this->shell->expects($this->once())->method('setResqueBackend');
         $this->shell->expects($this->once())->method('initResqueStatus');
@@ -974,16 +976,16 @@ class FresqueTest extends TestCase
      */
     public function testCallCommandWithValidCommandButInvalidOptions()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('start', 'help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['start', 'help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'])->getMock();
         $this->shell->output = $this->output;
-        $this->shell->input = $this->input;
+        $this->shell->input  = $this->input;
 
-        $helpOptions = new \stdClass();
+        $helpOptions        = new stdClass();
         $helpOptions->value = false;
 
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('help'))->will($this->returnValue($helpOptions));
 
-        $options = array('tr' => '', 'br' => '', 'vr' => '', 'i' => '');
+        $options = ['tr' => '', 'br' => '', 'vr' => '', 'i' => ''];
 
         $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue($options));
         $this->shell->expects($this->once())->method('start');
@@ -1004,9 +1006,9 @@ class FresqueTest extends TestCase
      */
     public function testCallCommandWithInvalidCommand()
     {
-        $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'))->getMock();
+        $this->shell         = $this->getMockBuilder(Fresque::class)->onlyMethods(['help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'])->getMock();
         $this->shell->output = $this->output;
-        $this->shell->input = $this->input;
+        $this->shell->input  = $this->input;
 
         $this->shell->expects($this->once())->method('help')->with('command');
         $this->shell->expects($this->never())->method('setResqueBackend');
@@ -1032,7 +1034,7 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsUsingDefaultConfigFile()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->once())->method('getOption')->will($this->returnValue($option));
 
@@ -1047,14 +1049,14 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsUsingInexistingConfigFileFromArgs()
     {
-        $iniFile = 'inexisting_file.ini';
-        $option = new \stdClass();
+        $iniFile       = 'inexisting_file.ini';
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->never())->method('getOptionValues');
         $this->input->expects($this->never())->method('getOption');
         $this->output->expects($this->once())->method('outputLine')->with($this->stringContains('The config file \'' . $iniFile . '\' was not found'));
 
-        $return = $this->shell->loadSettings('', array('config' => $iniFile));
+        $return = $this->shell->loadSettings('', ['config' => $iniFile]);
 
         $this->assertEquals($iniFile, $this->shell->config_file);
         $this->assertEquals(false, $return);
@@ -1066,11 +1068,11 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsUsingInexistingConfigFileFromOption()
     {
-        $iniFile = 'inexisting_file.ini';
-        $option = new \stdClass();
+        $iniFile       = 'inexisting_file.ini';
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->once())->method('getOptionValues')->will(
-            $this->returnValue(array('config' => $iniFile))
+            $this->returnValue(['config' => $iniFile])
         );
         $this->input->expects($this->never())->method('getOption');
         $this->output->expects($this->once())->method('outputLine')->with($this->stringContains('The config file \'' . $iniFile . '\' was not found'));
@@ -1086,7 +1088,7 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsWithDebugToFalse()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->once())->method('getOptionValues');
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
@@ -1102,12 +1104,12 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsWithDebugFromArgs()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->never())->method('getOptionValues');
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
 
-        $return = $this->shell->loadSettings('', array('debug' => true));
+        $return = $this->shell->loadSettings('', ['debug' => true]);
 
         $this->assertEquals(true, $this->shell->debug);
         $this->assertEquals(true, $return);
@@ -1118,11 +1120,11 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsWithDebugFromOption()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
-        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue(array(
-            'debug' => true
-        )));
+        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue([
+            'debug' => true,
+        ]));
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
 
         $return = $this->shell->loadSettings('');
@@ -1136,7 +1138,7 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsWithDefaultVerbose()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->once())->method('getOptionValues');
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
@@ -1152,12 +1154,12 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsWithVerboseFromOption()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = true;
         $this->input->expects($this->never())->method('getOptionValues');
         $this->input->expects($this->any())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
 
-        $return = $this->shell->loadSettings('', array('verbose' => false));
+        $return = $this->shell->loadSettings('', ['verbose' => false]);
 
         $this->assertEquals(true, $this->shell->runtime['Default']['verbose']);
         $this->assertEquals(true, $return);
@@ -1168,12 +1170,12 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingCallForTestConfig()
     {
-        $testResults = array(
+        $testResults = [
             'name1' => true,
-            'name2' => true
-        );
+            'name2' => true,
+        ];
 
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = true;
         $this->input->expects($this->once())->method('getOptionValues');
         $this->input->expects($this->any())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
@@ -1189,7 +1191,7 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingDoNotCallForTestConfigOnTestCommand()
     {
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = true;
         $this->input->expects($this->once())->method('getOptionValues');
         $this->input->expects($this->any())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
@@ -1205,12 +1207,12 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsDieWhenConfigContainsError()
     {
-        $errors = array(
+        $errors = [
             'name1' => 'message1',
-            'name2' => 'message2'
-        );
+            'name2' => 'message2',
+        ];
 
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = true;
         $this->input->expects($this->once())->method('getOptionValues');
         $this->input->expects($this->any())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
@@ -1234,8 +1236,8 @@ class FresqueTest extends TestCase
      */
     public function testLoadSettingsOverrideDefaultSettingsWithCLIOption()
     {
-        $cliOption = array('host' => 'testhost', 'include' => 'custom.php');
-        $option = new \stdClass();
+        $cliOption     = ['host' => 'testhost', 'include' => 'custom.php'];
+        $option        = new stdClass();
         $option->value = false;
         $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue($cliOption));
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
@@ -1259,9 +1261,9 @@ class FresqueTest extends TestCase
     {
         $config_file = __DIR__ . '/test_fresque.ini';
 
-        $option = new \stdClass();
+        $option        = new stdClass();
         $option->value = false;
-        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue(array('config' => $config_file)));
+        $this->input->expects($this->once())->method('getOptionValues')->will($this->returnValue(['config' => $config_file]));
         $this->input->expects($this->once())->method('getOption')->with($this->equalTo('verbose'))->will($this->returnValue($option));
 
         $return = $this->shell->loadSettings('');
@@ -1274,24 +1276,24 @@ class FresqueTest extends TestCase
         $this->assertEquals(true, $return);
     }
 
-
 }
-
 
 class DummyWorker
 {
     public function __construct($name, $processedStat = 0, $failedStat = 0)
     {
-        $this->name = $name;
+        $this->name          = $name;
         $this->processedStat = $processedStat;
-        $this->failedStat = $failedStat;
+        $this->failedStat    = $failedStat;
     }
 
     public function getStat($cat)
     {
-        switch($cat) {
-            case 'processed' : return $this->processedStat;
-            case 'failed' : return $this->failedStat;
+        switch ($cat) {
+            case 'processed' :
+                return $this->processedStat;
+            case 'failed' :
+                return $this->failedStat;
         }
     }
 

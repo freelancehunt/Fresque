@@ -13,7 +13,7 @@ jobs:
         run: docker-compose up -d
 
       - name: Install dependencies
-        run: docker-compose run php composer install
+        run: docker-compose exec -T php composer install
 
       - name: Run PHPUnit Tests
-        run: docker-compose run php vendor/bin/phpunit
+        run: docker-compose exec -T php vendor/bin/phpunit

@@ -24,8 +24,12 @@
   ],
   "license": "MIT",
   "autoload": {
-    "psr-0": {
-      "Fresque": "src"
+    "psr-4": {
+      "Fresque\\": "src/Fresque",
+      "MonologInit\\": "src/MonologInit",
+      "Redisent\\": "src/Redisent",
+      "Resque\\": "src/Resque",
+      "ResqueScheduler\\": "src/ResqueScheduler"
     }
   },
   "autoload-dev": {
@@ -40,8 +44,7 @@
     "ext-redis": "*",
     "zetacomponents/console-tools": "^1.7",
     "zetacomponents/base": "^1.9",
-    "kamisama/php-resque-ex": ">=1.2.5",
-    "kamisama/php-resque-ex-scheduler": "~1.2.2"
+    "monolog/monolog": "^2.5"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",
