@@ -1,8 +1,8 @@
 <?php
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
-use Resque\Worker;
+use Freelancehunt\Resque\Worker;
 use Redis;
 
 class ResqueStats

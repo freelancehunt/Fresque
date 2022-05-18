@@ -1,5 +1,5 @@
 <?php
 
-use Fresque\Fresque;
+use Freelancehunt\Fresque\Fresque;
 
 $fresque = new Fresque();

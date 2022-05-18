@@ -2,7 +2,7 @@
 
 namespace Tests\Resque;
 
-use Resque\Resque_Stat;
+use Freelancehunt\Resque\Resque_Stat;
 
 class StatTest extends ResqueTestCase
 {

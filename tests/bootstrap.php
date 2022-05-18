@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Resque;
+namespace Tests;
 
-use Resque\Resque;
+use Freelancehunt\Resque\Resque;
 use Exception;
 
 include "./vendor/autoload.php";

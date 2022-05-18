@@ -25,11 +25,7 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Fresque\\": "src/Fresque",
-      "MonologInit\\": "src/MonologInit",
-      "Redisent\\": "src/Redisent",
-      "Resque\\": "src/Resque",
-      "ResqueScheduler\\": "src/ResqueScheduler"
+      "Freelancehunt\\": "src/"
     }
   },
   "autoload-dev": {

@@ -8,7 +8,7 @@
  * @package   Redisent
  */
 
-namespace Redisent;
+namespace Freelancehunt\Redisent;
 
 use Exception;
 

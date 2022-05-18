@@ -1,6 +1,6 @@
 <?php
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
 use Redis;
 

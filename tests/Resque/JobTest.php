@@ -2,14 +2,18 @@
 
 namespace Tests\Resque;
 
-use Resque\Resque_Job;
-use Resque\Resque;
-use Resque\Resque_Stat;
-use Resque\Worker;
+use Freelancehunt\Resque\Resque_Job;
+use Freelancehunt\Resque\Resque;
+use Freelancehunt\Resque\Resque_Stat;
+use Freelancehunt\Resque\Worker;
 use stdClass;
-use MonologInit\MonologInit;
 use InvalidArgumentException;
-use Resque\Resque_Exception;
+use Freelancehunt\Resque\Resque_Exception;
+use Tests\Test_Job;
+use Tests\Test_Job_Without_Perform_Method;
+use Tests\Test_Job_With_SetUp;
+use Tests\Failing_Job;
+use Tests\Test_Job_With_TearDown;
 
 /**
  * Resque_Job tests.

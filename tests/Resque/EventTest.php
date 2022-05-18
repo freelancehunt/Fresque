@@ -2,11 +2,12 @@
 
 namespace Tests\Resque;
 
-use Resque\Worker;
-use Resque\Resque_Event;
-use Resque\Resque;
-use Resque\Resque_Job;
-use Resque\Job\Resque_Job_DontPerform;
+use Freelancehunt\Resque\Worker;
+use Freelancehunt\Resque\Resque_Event;
+use Freelancehunt\Resque\Resque;
+use Freelancehunt\Resque\Resque_Job;
+use Freelancehunt\Resque\Job\Resque_Job_DontPerform;
+use Tests\Test_Job;
 
 class EventTest extends ResqueTestCase
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Resque\Failure;
+namespace Freelancehunt\Resque\Failure;
 
 /**
  * Interface that all failure backends should implement.

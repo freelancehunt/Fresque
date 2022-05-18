@@ -8,7 +8,7 @@
  * @license          http://www.opensource.org/licenses/mit-license.php
  */
 
-namespace ResqueScheduler;
+namespace Freelancehunt\ResqueScheduler;
 
 class InvalidTimestampException extends Resque_Exception
 {

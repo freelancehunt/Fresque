@@ -9,7 +9,7 @@
  * @license     MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-namespace ResqueScheduler\Job;
+namespace Freelancehunt\ResqueScheduler\Job;
 
 class Status extends \Resque_Job_Status
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Resque\Failure;
+namespace Freelancehunt\Resque\Failure;
 
-use Resque\Resque;
+use Freelancehunt\Resque\Resque;
 
 /**
  * Redis backend for storing failed Resque jobs.

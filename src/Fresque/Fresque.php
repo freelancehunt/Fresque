@@ -1,12 +1,12 @@
 <?php
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
 use ezcConsoleInput;
 use ezcConsoleOutput;
 use DateTime;
-use Resque\Resque;
-use Resque\Worker;
+use Freelancehunt\Resque\Resque;
+use Freelancehunt\Resque\Worker;
 
 define('DS', DIRECTORY_SEPARATOR);
 

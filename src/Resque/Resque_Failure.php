@@ -1,9 +1,9 @@
 <?php
 
-namespace Resque;
+namespace Freelancehunt\Resque;
 
 use Exception;
-use Resque\Failure\Resque_Failure_Redis;
+use Freelancehunt\Resque\Failure\Resque_Failure_Redis;
 
 /**
  * Failed Resque job.

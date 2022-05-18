@@ -1,8 +1,8 @@
 <?php
 
-namespace Resque\Job;
+namespace Freelancehunt\Resque\Job;
 
-use Resque\Resque;
+use Freelancehunt\Resque\Resque;
 
 /**
  * Status tracker/information for a job.

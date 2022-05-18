@@ -1,10 +1,10 @@
 <?php
 
-namespace Resque;
+namespace Freelancehunt\Resque;
 
 use InvalidArgumentException;
-use Resque\Job\Resque_Job_Status;
-use Resque\Job\Resque_Job_DontPerform;
+use Freelancehunt\Resque\Job\Resque_Job_Status;
+use Freelancehunt\Resque\Job\Resque_Job_DontPerform;
 
 /**
  * Resque job.

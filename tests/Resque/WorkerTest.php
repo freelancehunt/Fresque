@@ -2,11 +2,10 @@
 
 namespace Tests\Resque;
 
-use Resque\Worker;
-use Resque\Resque_Stat;
-use Resque\Resque;
-use Resque\Resque_Job;
-use MonologInit\MonologInit;
+use Freelancehunt\Resque\Worker;
+use Freelancehunt\Resque\Resque_Stat;
+use Freelancehunt\Resque\Resque;
+use Freelancehunt\Resque\Resque_Job;
 
 class WorkerTest extends ResqueTestCase
 {

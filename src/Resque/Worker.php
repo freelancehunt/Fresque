@@ -1,10 +1,10 @@
 <?php
 
-namespace Resque;
+namespace Freelancehunt\Resque;
 
-use MonologInit\MonologInit;
-use Resque\Job\Resque_Job_Status;
-use Resque\Job\Resque_Job_DirtyExitException;
+use Freelancehunt\MonologInit\MonologInit;
+use Freelancehunt\Resque\Job\Resque_Job_Status;
+use Freelancehunt\Resque\Job\Resque_Job_DirtyExitException;
 use Exception;
 use RedisException;
 use RuntimeException;

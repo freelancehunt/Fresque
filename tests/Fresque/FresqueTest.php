@@ -4,13 +4,13 @@ namespace Tests\Fresque;
 
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
-use Fresque\ResqueStatus;
-use Fresque\Fresque;
-use Fresque\ResqueStats;
+use Freelancehunt\Fresque\ResqueStatus;
+use Freelancehunt\Fresque\Fresque;
+use Freelancehunt\Fresque\ResqueStats;
 use ezcConsoleOutput;
 use ezcConsoleInput;
 use ReflectionMethod;
-use Fresque\SendSignalCommandOptions;
+use Freelancehunt\Fresque\SendSignalCommandOptions;
 use stdClass;
 
 class FresqueTest extends TestCase

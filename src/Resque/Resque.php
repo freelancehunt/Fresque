@@ -1,6 +1,6 @@
 <?php
 
-namespace Resque;
+namespace Freelancehunt\Resque;
 
 class Resque
 {

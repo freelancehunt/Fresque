@@ -4,8 +4,8 @@ namespace Tests\Resque;
 
 use PHPUnit\Framework\TestCase;
 use Redis;
-use Resque\Resque_Redis;
-use MonologInit\MonologInit;
+use Freelancehunt\Resque\Resque_Redis;
+use Freelancehunt\MonologInit\MonologInit;
 
 class ResqueTestCase extends TestCase
 {

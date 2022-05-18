@@ -3,7 +3,7 @@
 namespace Tests\Fresque;
 
 use PHPUnit\Framework\TestCase;
-use Fresque\ResqueStatus;
+use Freelancehunt\Fresque\ResqueStatus;
 use Redis;
 
 class ResqueStatusTest extends TestCase

@@ -17,7 +17,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-namespace MonologInit;
+namespace Freelancehunt\MonologInit;
 
 use Monolog\Handler\Handler;
 use Monolog\Logger;
