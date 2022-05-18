@@ -1,17 +1,16 @@
 #!/usr/bin/env php
 <?php
 // Look for an environment variable with
+use Resque\Resque;
+
 $RESQUE_PHP = getenv('RESQUE_PHP');
 if (!empty($RESQUE_PHP)) {
     require_once $RESQUE_PHP;
-    require_once dirname($RESQUE_PHP) . '/Resque/Worker.php';
 } elseif (!class_exists('Resque')) { // Otherwise, if we have no Resque then assume it is in the include path
     require_once 'Resque/Resque.php';
 }
 
-// Load resque-scheduler
-require_once dirname(dirname(__FILE__)) . '/src/ResqueScheduler/ResqueScheduler.php';
-require_once dirname(dirname(__FILE__)) . '/src/ResqueScheduler/Worker.php';
+include "./vendor/autoload.php";
 
 $REDIS_BACKEND = getenv('REDIS_BACKEND');
 $REDIS_DATABASE = getenv('REDIS_DATABASE');
@@ -32,9 +31,9 @@ $LOGGING = getenv('LOGGING');
 $VERBOSE = getenv('VERBOSE');
 $VVERBOSE = getenv('VVERBOSE');
 if (!empty($LOGGING) || !empty($VERBOSE)) {
-    $logLevel = ResqueScheduler\Worker::LOG_NORMAL;
+    $logLevel = \ResqueScheduler\Worker::LOG_NORMAL;
 } elseif (!empty($VVERBOSE)) {
-    $logLevel = ResqueScheduler\Worker::LOG_VERBOSE;
+    $logLevel = \ResqueScheduler\Worker::LOG_VERBOSE;
 }
 
 // Load the user's application if one exists
@@ -70,9 +69,10 @@ $worker->work($interval);
 function logStart($logger, $message, $logLevel)
 {
     if ($logger === null || $logger->getInstance() === null) {
-        fwrite(STDOUT, (($logLevel == Resque_Worker::LOG_NORMAL) ? "" : "[" . strftime('%T %Y-%m-%d') . "] ") . $message['message'] . "\n");
+        // date('D M d H:i:s T Y', $schedulerWorker->nextDelayedTimestamp())
+        fwrite(STDOUT, (($logLevel == \ResqueScheduler\Worker::LOG_NORMAL) ? "" : "[" . date('H:i:s Y-m-d') . "] ") . $message['message'] . "\n");
     } else {
-        list($host, $pid, $queues) = explode(':', $message['data']['worker'], 3);
+        [$host, $pid, $queues] = explode(':', $message['data']['worker'], 3);
         $message['data']['worker'] = $host . ':' . $pid;
         $message['data']['queues'] = explode(',', $queues);
 

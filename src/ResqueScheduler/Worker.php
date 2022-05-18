@@ -11,7 +11,7 @@
 
 namespace ResqueScheduler;
 
-class Worker extends \Resque_Worker
+class Worker extends \Resque\Worker
 {
 
     /**
