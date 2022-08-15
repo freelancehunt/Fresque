@@ -1,6 +1,6 @@
 <?php
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
 use Redis;
 
@@ -26,7 +26,7 @@ class ResqueStatus
      */
     public function addWorker(int $pid, array $args): bool
     {
-        return $this->redis->hSet(self::WORKER_KEY, $pid, serialize($args)) !== false;;
+        return $this->redis->hSet(self::WORKER_KEY, $pid, serialize($args)) !== false;
     }
 
     /**

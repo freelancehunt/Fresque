@@ -17,7 +17,7 @@
  * @license    MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
 use ezcConsoleInput;
 use ezcConsoleOutput;
@@ -452,7 +452,7 @@ class Fresque
         }
 
         $pidFile = (isset($this->runtime['Fresque']['tmpdir']) ?
-                $this->runtime['Fresque']['tmpdir'] : dirname(__DIR__) . DS . 'tmp')
+                $this->runtime['Fresque']['tmpdir'] : dirname(__DIR__) . DS . '..' . DS . 'tmp')
             . DS . str_replace('.', '', microtime(true));
         $count   = $this->runtime['Default']['workers'];
 

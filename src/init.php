@@ -41,6 +41,6 @@ if (!class_exists('Composer\Autoload\ClassLoader', false)) {
     );
 }
 
-require __DIR__ . DIRECTORY_SEPARATOR . 'Fresque.php';
+//require __DIR__ . DIRECTORY_SEPARATOR . 'Fresque' . DIRECTORY_SEPARATOR . 'Fresque.php';
 
-$fresque = new Fresque\Fresque();
+$fresque = new Freelancehunt\Fresque\Fresque();

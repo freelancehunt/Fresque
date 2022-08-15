@@ -16,7 +16,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
 /**
  * SendSignalCommandOptions Class
