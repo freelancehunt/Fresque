@@ -1,5 +1,7 @@
 FROM php:8.1-fpm
 
+RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/*
+
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer

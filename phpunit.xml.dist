@@ -2,15 +2,15 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false" bootstrap="tests/bootstrap.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
   <coverage includeUncoveredFiles="true">
     <include>
-      <directory suffix=".php">./lib</directory>
+      <directory suffix=".php">./src</directory>
     </include>
     <exclude>
       <directory suffix=".php">./vendor/</directory>
       <directory suffix=".php">./tests</directory>
-      <file>./lib/init.php</file>
-      <file>./lib/DialogMenuValidator.php</file>
-      <file>./lib/SendSignalCommandOptions.php</file>
-      <file>./lib/ResqueStats.php</file>
+      <file>./src/init.php</file>
+      <file>./src/Fresque/DialogMenuValidator.php</file>
+      <file>./src/Fresque/SendSignalCommandOptions.php</file>
+      <file>./src/Fresque/ResqueStats.php</file>
     </exclude>
     <report>
       <clover outputFile="./build/logs/clover.xml"/>

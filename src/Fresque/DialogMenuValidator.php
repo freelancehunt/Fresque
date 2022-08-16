@@ -16,7 +16,9 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
+
+use ezcConsoleMenuDialogValidator;
 
 /**
  * DialogMenuValidator Class
@@ -25,7 +27,7 @@ namespace Fresque;
  *
  * @since 1.0.0
  */
-class DialogMenuValidator implements \ezcConsoleMenuDialogValidator
+class DialogMenuValidator implements ezcConsoleMenuDialogValidator
 {
     protected $elements = array();
 

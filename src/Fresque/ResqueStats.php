@@ -16,7 +16,9 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
+
+use Freelancehunt\Resque\Worker;
 
 /**
  * ResqueStats Class
@@ -61,7 +63,7 @@ class ResqueStats
      */
     public function getWorkers()
     {
-        return (array)\Resque_Worker::all();
+        return (array) Worker::all();
     }
 
     /**

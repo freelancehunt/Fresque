@@ -1,6 +1,6 @@
 <?php
 
-namespace Fresque;
+namespace Freelancehunt\Fresque;
 
 use Redis;
 
@@ -10,7 +10,6 @@ use Redis;
 class ResqueStatus
 {
     public const WORKER_KEY           = 'ResqueWorker';
-    public const SCHEDULER_WORKER_KEY = 'ResqueSchedulerWorker';
     public const PAUSED_WORKER_KEY    = 'PausedWorker';
 
     public function __construct(protected Redis $redis)
@@ -27,62 +26,6 @@ class ResqueStatus
     public function addWorker(int $pid, array $args): bool
     {
         return $this->redis->hSet(self::WORKER_KEY, $pid, serialize($args)) !== false;;
-    }
-
-    /**
-     * Register a Scheduler Worker
-     */
-    public function registerSchedulerWorker(int $pid): bool
-    {
-        return (bool) $this->redis->set(self::SCHEDULER_WORKER_KEY, $pid);
-    }
-
-    /**
-     * Test if a given worker is a scheduler worker
-     *
-     * @param Worker|string $worker Worker to test
-     *
-     * @return  boolean                 True if the worker is a scheduler worker
-     * @since   0.0.1
-     */
-    public function isSchedulerWorker(mixed $worker): bool
-    {
-        [$host, $pid, $queue] = explode(':', (string) $worker);
-
-        return $pid === $this->redis->get(self::SCHEDULER_WORKER_KEY);
-    }
-
-    /**
-     * Check if the Scheduler Worker is already running
-     *
-     * @return boolean True if the scheduler worker is already running
-     */
-    public function isRunningSchedulerWorker(): bool
-    {
-        $pids         = $this->redis->hKeys(self::WORKER_KEY);
-        $schedulerPid = $this->redis->get(self::SCHEDULER_WORKER_KEY);
-
-        if ($schedulerPid !== false && is_array($pids)) {
-            if (in_array($schedulerPid, $pids)) {
-                return true;
-            }
-            // Pid is outdated, remove it
-            $this->unregisterSchedulerWorker();
-
-            return false;
-        }
-
-        return false;
-    }
-
-    /**
-     * Unregister a Scheduler Worker
-     *
-     * @return boolean True if the scheduler worker existed and was successfully unregistered
-     */
-    public function unregisterSchedulerWorker(): bool
-    {
-        return $this->redis->del(self::SCHEDULER_WORKER_KEY) > 0;
     }
 
     /**

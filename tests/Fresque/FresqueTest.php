@@ -1,11 +1,17 @@
 <?php
-namespace Fresque\Test;
+
+namespace Tests\Fresque;
 
 // Used to mock the filesystem
+use ezcConsoleInput;
+use ezcConsoleOutput;
+use Freelancehunt\Fresque\ResqueStats;
+use Freelancehunt\Fresque\SendSignalCommandOptions;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
-use Fresque\ResqueStatus;
-use Fresque\Fresque;
+use Freelancehunt\Fresque\ResqueStatus;
+use Freelancehunt\Fresque\Fresque;
+use ReflectionMethod;
 
 class FresqueTest extends TestCase
 {
@@ -13,15 +19,15 @@ class FresqueTest extends TestCase
     {
         $_SERVER['argv'] = array();
 
-        $this->output = $this->createMock('\ezcConsoleOutput');
-        $this->input = $this->createMock('\ezcConsoleInput');
+        $this->output = $this->createMock(ezcConsoleOutput::class);
+        $this->input = $this->createMock(ezcConsoleInput::class);
 
         $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('callCommand', 'outputTitle', 'kill', 'getUserChoice', 'testConfig', 'enqueueJob', 'getResqueStat'))->getMock();
         $this->shell->output = $this->output;
         $this->shell->input = $this->input;
 
         $this->shell->ResqueStatus = $this->ResqueStatus = $this->createMock(ResqueStatus::class);
-        $this->shell->ResqueStats = $this->ResqueStats = $this->getMockBuilder('\Fresque\ResqueStats')->disableOriginalConstructor()->getMock();
+        $this->shell->ResqueStats = $this->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
         $this->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
         $this->startArgs = array(
@@ -49,14 +55,9 @@ class FresqueTest extends TestCase
                 'target'   => '',
                 'filename' => '',
             ),
-            'Scheduler' => array(
-                'enabled' => false,
-                'lib'     => './vendor/kamisama/phhp-resque-ex-scheduler',
-                'log'     => '',
-            ),
         );
 
-        $this->sendSignalOptions = new \Fresque\SendSignalCommandOptions();
+        $this->sendSignalOptions = new SendSignalCommandOptions();
 
         $this->sendSignalOptions->title = 'Testing workers';
         $this->sendSignalOptions->noWorkersMessage = 'There is no workers to test';
@@ -107,7 +108,7 @@ class FresqueTest extends TestCase
      */
     public function testGetResqueBin()
     {
-        $method = new \ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
         $method->setAccessible(true);
 
         $root = vfsStream::setup('resque');
@@ -128,7 +129,7 @@ class FresqueTest extends TestCase
      */
     public function testGetResqueBinWithExtension()
     {
-        $method = new \ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
         $method->setAccessible(true);
 
         $root = vfsStream::setup('resque');
@@ -148,7 +149,7 @@ class FresqueTest extends TestCase
      */
     public function testGetResqueBinFallbtestStopWhenNoWorkersackInRoot()
     {
-        $method = new \ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
         $method->setAccessible(true);
 
         $root = vfsStream::setup('resque');
@@ -228,63 +229,12 @@ class FresqueTest extends TestCase
                 [$this->stringContains('.')],
             );
 
-        $this->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(array('isRunningSchedulerWorker', 'addWorker'))->getMock();
+        $this->ResqueStatus = $this->getMockBuilder(ResqueStatus::class)->disableOriginalConstructor()->onlyMethods(array('addWorker'))->getMock();
 
         $this->ResqueStatus->expects($this->once())->method('addWorker');
         $this->shell->ResqueStatus = $this->ResqueStatus;
 
         $this->shell->start($this->startArgs);
-    }
-
-    /**
-     * Start a scheduler worker
-     *
-     * @covers \Fresque\Fresque::startScheduler
-     * @return void
-     */
-    public function testStartScheduler() {
-        $this->shell = $this->getMockBuilder(Fresque::class)
-            ->onlyMethods(['callCommand', 'outputTitle', 'exec', 'checkStartedWorker', 'getProcessOwner'])
-            ->getMock();
-        $this->shell->output = $this->output;
-
-        $pid = rand(0, 100);
-
-        $this->shell->expects($this->never())->method('outputTitle');
-
-        $this->shell->expects($this->once())->method('exec')->will($this->returnValue(true));
-        $this->shell->expects($this->once())->method('checkStartedWorker')->will($this->returnValue($pid));
-
-        $this->output
-            ->expects($this->exactly(1))
-            ->method('outputLine')
-            ->withConsecutive(
-                [$this->stringContains('done')],
-            );
-
-        $this->output
-            ->expects($this->exactly(4))
-            ->method('outputText')
-            ->withConsecutive(
-                [$this->stringContains('Starting scheduler worker')],
-                [$this->stringContains('.')],
-                [$this->stringContains('.')],
-                [$this->stringContains('.')],
-            );
-
-        $this->ResqueStatus = $this
-            ->getMockBuilder(ResqueStatus::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['isRunningSchedulerWorker', 'registerSchedulerWorker', 'addWorker'])
-            ->getMock();
-
-        $this->ResqueStatus->expects($this->once())->method('isRunningSchedulerWorker')->will($this->returnValue(false));
-        $this->ResqueStatus->expects($this->once())->method('registerSchedulerWorker')->with($this->equalTo($pid));
-        $this->ResqueStatus->expects($this->once())->method('addWorker');
-        $this->shell->ResqueStatus = $this->ResqueStatus;
-
-        $this->startArgs['Scheduler']['enabled'] = true;
-        $this->shell->start($this->startArgs, true);
     }
 
     public function testRestartWhenNoStartedWorkers()
@@ -353,7 +303,6 @@ class FresqueTest extends TestCase
 
         $this->shell->ResqueStatus = $this->ResqueStatus;
         $this->shell->runtime['Queues'] = array();
-        $this->shell->runtime['Scheduler']['enabled'] = false;
 
         $this->shell->load();
     }
@@ -384,7 +333,6 @@ class FresqueTest extends TestCase
             'debug' => false
         );
         $this->shell->runtime['Queues'] = array($queue, $queue);
-        $this->shell->runtime['Scheduler']['enabled'] = false;
         $this->shell->load();
     }
 
@@ -864,7 +812,7 @@ class FresqueTest extends TestCase
         ];
 
         $this->shell->ResqueStatus = $this->createMock(ResqueStatus::class);
-        $this->shell->ResqueStats = $this->getMockBuilder('\Fresque\ResqueStats')->disableOriginalConstructor()->getMock();
+        $this->shell->ResqueStats = $this->getMockBuilder(ResqueStats::class)->disableOriginalConstructor()->getMock();
         $this->shell->ResqueStats->expects($this->any())->method('getWorkerStartDate')->willReturn('2022-05-01');
 
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('Resque statistics'));
@@ -1020,7 +968,6 @@ class FresqueTest extends TestCase
     public function testReset()
     {
         $this->ResqueStatus->expects($this->once())->method('clearWorkers');
-        $this->ResqueStatus->expects($this->once())->method('unregisterSchedulerWorker');
 
         $this->shell->reset();
     }

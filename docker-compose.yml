@@ -1,14 +1,12 @@
 version: '3'
 services:
   php:
-    container_name: php
     build: ./docker/php
     working_dir: /app
     volumes:
       - "./:/app:cached"
 
   redis:
-    container_name: redis
     image: "redis:alpine"
     depends_on:
       - php
