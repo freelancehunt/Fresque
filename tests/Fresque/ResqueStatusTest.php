@@ -1,7 +1,10 @@
 <?php
 
+namespace Tests\Fresque;
+
 use PHPUnit\Framework\TestCase;
-use Fresque\ResqueStatus;
+use Freelancehunt\Fresque\ResqueStatus;
+use Redis;
 
 class ResqueStatusTest extends TestCase
 {
@@ -18,14 +21,12 @@ class ResqueStatusTest extends TestCase
         $this->workers = array();
         $this->workers[100] = new Worker('One:100:queue5', 5);
         $this->workers[101] = new Worker('Two:101:queue1', 10);
-        $this->workers[102] = new Worker('Three:102:schedulerWorker', 145);
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
         $this->redis->del(ResqueStatus::WORKER_KEY);
-        $this->redis->del(ResqueStatus::SCHEDULER_WORKER_KEY);
         $this->redis->del(ResqueStatus::PAUSED_WORKER_KEY);
     }
 
@@ -50,82 +51,6 @@ class ResqueStatusTest extends TestCase
         $this->assertEquals($workers["0125"], unserialize($datas["0125"]));
         unset($workers[1]['debug']);
         $this->assertEquals($workers["6523"], unserialize($datas["6523"]));
-    }
-
-    /**
-     * @covers ResqueStatus::registerSchedulerWorker
-     */
-    public function testRegisterSchedulerWorker()
-    {
-        $res = $this->ResqueStatus->registerSchedulerWorker(100);
-
-        $this->assertTrue($res);
-        $this->assertEquals(100, $this->redis->get(ResqueStatus::SCHEDULER_WORKER_KEY));
-    }
-
-    /**
-     * @covers ResqueStatus::isSchedulerWorker
-     */
-    public function testIsSchedulerWoker()
-    {
-        $this->redis->set(ResqueStatus::SCHEDULER_WORKER_KEY, '102');
-        $this->assertTrue($this->ResqueStatus->isSchedulerWorker($this->workers[102]));
-    }
-
-    /**
-     * @covers ResqueStatus::isSchedulerWorker
-     */
-    public function testIsSchedulerWokerWhenFalse()
-    {
-        $this->assertFalse($this->ResqueStatus->isSchedulerWorker($this->workers[100]));
-    }
-
-    /**
-     * @covers ResqueStatus::isRunningSchedulerWorker
-     */
-    public function testIsRunningSchedulerWorker()
-    {
-        $this->redis->set(ResqueStatus::SCHEDULER_WORKER_KEY, '100');
-        $this->redis->hSet(ResqueStatus::WORKER_KEY, 100, '');
-        $this->assertTrue($this->ResqueStatus->isRunningSchedulerWorker());
-    }
-
-    /**
-     * @covers ResqueStatus::isRunningSchedulerWorker
-     */
-    public function testIsRunningSchedulerWorkerWhenItIsNotRunning()
-    {
-        $this->assertFalse($this->ResqueStatus->isRunningSchedulerWorker());
-    }
-
-    /**
-     * @covers ResqueStatus::isRunningSchedulerWorker
-     */
-    public function testIsRunningSchedulerWorkerCleanUpOldWorker()
-    {
-        $this->redis->set(ResqueStatus::SCHEDULER_WORKER_KEY, '102');
-        $this->redis->hSet(ResqueStatus::WORKER_KEY, 100, '');
-        $this->redis->hSet(ResqueStatus::WORKER_KEY, 101, '');
-
-        $status = $this->getMockBuilder(ResqueStatus::class)
-            ->onlyMethods(['unregisterSchedulerWorker'])
-            ->setConstructorArgs([$this->redis])
-            ->getMock();
-
-        $status->expects($this->once())->method('unregisterSchedulerWorker');
-        $this->assertFalse($status->isRunningSchedulerWorker());
-    }
-
-    /**
-     * @covers ResqueStatus::unregisterSchedulerWorker
-     */
-    public function testUnregisterSchedulerWorker()
-    {
-        $worker = 'schedulerWorker';
-        $this->redis->set(ResqueStatus::SCHEDULER_WORKER_KEY, $worker);
-
-        $this->assertTrue($this->ResqueStatus->unregisterSchedulerWorker());
-        $this->assertSame(0, $this->redis->exists(ResqueStatus::SCHEDULER_WORKER_KEY));
     }
 
     /**

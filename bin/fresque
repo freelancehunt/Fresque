@@ -28,5 +28,5 @@ while [ -h $SELF_PATH ]; do
     SELF_PATH=$(cd $DIR && cd $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
 done
 
-exec php -q ${SELF_PATH/%fresque/}src/init.php "$@"
+exec php -q ${SELF_PATH/%fresque/}../src/init.php "$@"
 exit;
