@@ -103,18 +103,6 @@ To start a new resque worker. By default, it will use the default configuration 
 > The `--user` must have permission to read and write to that file (and the parent folder, since the file will be created if non-existent).
 > Relative path is relative to the fresque folder.
 
-
-* **startScheduler**
-
-To start the scheduler worker.
-
-> `-i` or `--interval` : Polling frequency. Number of seconds between each polling.
-
-Scheduler worker is disabled by default, enable it in the configuration file, in the [Scheduler] section. When enabled, it'll be automatically started when using `load()`.
-
-*Only one scheduler worker can run at the same time*
-
-
 * **stop**
 
 To stop workers. Will wait for all jobs to finish, then stop the worker. If more than one worker is running, a list of workers will be displayed, to choose the worker to stop.

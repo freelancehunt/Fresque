@@ -1,10 +1,11 @@
 #!/usr/bin/env php
 <?php
-// Find and initialize Composer
+
 use Freelancehunt\MonologInit\MonologInit;
 use Freelancehunt\Resque\Resque;
 use Freelancehunt\Resque\Worker as ResqueWorker;
 
+// Find and initialize Composer
 $files = array(
     __DIR__ . '/../../vendor/autoload.php',
     __DIR__ . '/../../../autoload.php',
