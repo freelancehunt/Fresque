@@ -18,6 +18,8 @@
 
 namespace Freelancehunt\Fresque;
 
+use ezcConsoleMenuDialogValidator;
+
 /**
  * DialogMenuValidator Class
  *
@@ -25,7 +27,7 @@ namespace Freelancehunt\Fresque;
  *
  * @since 1.0.0
  */
-class DialogMenuValidator implements \ezcConsoleMenuDialogValidator
+class DialogMenuValidator implements ezcConsoleMenuDialogValidator
 {
     protected $elements = array();
 
