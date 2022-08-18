@@ -17,3 +17,5 @@ jobs:
 
       - name: Run PHPUnit Tests
         run: docker-compose exec -T php vendor/bin/phpunit
+
+      - uses: codecov/codecov-action@v3
