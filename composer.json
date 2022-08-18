@@ -34,7 +34,7 @@
     }
   },
   "require": {
-    "php": ">=8.1",
+    "php": ">=8.0",
     "zetacomponents/console-tools": "^1.7",
     "zetacomponents/base": "^1.9",
     "ext-pcntl": "*"
