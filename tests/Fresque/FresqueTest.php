@@ -5,12 +5,12 @@ namespace Tests\Fresque;
 // Used to mock the filesystem
 use ezcConsoleInput;
 use ezcConsoleOutput;
+use Freelancehunt\Fresque\Fresque;
 use Freelancehunt\Fresque\ResqueStats;
 use Freelancehunt\Fresque\SendSignalCommandOptions;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Freelancehunt\Fresque\ResqueStatus;
-use Freelancehunt\Fresque\Fresque;
 use ReflectionMethod;
 
 class FresqueTest extends TestCase
@@ -73,9 +73,6 @@ class FresqueTest extends TestCase
 
     /**
      * Should not print debug information when debug is enabled
-     *
-     * @covers \Fresque\Fresque::debug
-     * @return  void
      */
     public function testDebug()
     {
@@ -90,9 +87,6 @@ class FresqueTest extends TestCase
 
     /**
      * Should not print debug information when debug is disabled
-     *
-     * @covers \Fresque\Fresque::debug
-     * @return  void
      */
     public function testDebugWhenDisabled()
     {
@@ -101,31 +95,8 @@ class FresqueTest extends TestCase
     }
 
     /**
-     * Check if a resque bin file is in the bin folder
-     *
-     * @covers \Fresque\Fresque::getResqueBinFile
-     * @return  void
-     */
-    public function testGetResqueBin()
-    {
-        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
-        $method->setAccessible(true);
-
-        $root = vfsStream::setup('resque');
-        $root->addChild(vfsStream::newDirectory('bin'));
-        $root->getChild('bin')->addChild(vfsStream::newFile('resque'));
-
-        $this->assertTrue($root->hasChild('bin'));
-        $this->assertTrue($root->getChild('bin')->hasChild('resque'));
-        $this->assertEquals('./bin/resque', $method->invoke($this->shell, vfsStream::url('resque')));
-    }
-
-    /**
      * Check if a resque bin file is in the bin folder,
      * but with a .php extension
-     *
-     * @covers \Fresque\Fresque::getResqueBinFile
-     * @return  void
      */
     public function testGetResqueBinWithExtension()
     {
@@ -143,9 +114,6 @@ class FresqueTest extends TestCase
 
     /**
      * For old version of php-resque, when the file is in the root
-     *
-     * @covers \Fresque\Fresque::getResqueBinFile
-     * @return  void
      */
     public function testGetResqueBinFallbtestStopWhenNoWorkersackInRoot()
     {
@@ -157,10 +125,24 @@ class FresqueTest extends TestCase
     }
 
     /**
+     * Check if a resque bin file is in the bin folder
+     */
+    public function testGetResqueBin()
+    {
+        $method = new ReflectionMethod(Fresque::class, 'getResqueBinFile');
+        $method->setAccessible(true);
+
+        $root = vfsStream::setup('resque');
+        $root->addChild(vfsStream::newDirectory('bin'));
+        $root->getChild('bin')->addChild(vfsStream::newFile('resque'));
+
+        $this->assertTrue($root->hasChild('bin'));
+        $this->assertTrue($root->getChild('bin')->hasChild('resque'));
+        $this->assertEquals('./bin/resque', $method->invoke($this->shell, vfsStream::url('resque')));
+    }
+
+    /**
      * Print a title
-     *
-     * @covers \Fresque\Fresque::outputTitle
-     * @return  void
      */
     public function testOutputMainTitle()
     {
@@ -182,9 +164,6 @@ class FresqueTest extends TestCase
 
     /**
      * Print a subtitle
-     *
-     * @covers \Fresque\Fresque::outputTitle
-     * @return  void
      */
     public function testOutputSubTitle()
     {
@@ -198,9 +177,6 @@ class FresqueTest extends TestCase
 
     /**
      * Start a worker
-     *
-     * @covers \Fresque\Fresque::start
-     * @return void
      */
     public function testStart()
     {
@@ -338,9 +314,6 @@ class FresqueTest extends TestCase
 
     /**
      * Queuing a job without arguments, will fail
-     *
-     * @covers \Fresque\Fresque::enqueue
-     * @return  void
      */
     public function testEnqueueJobWithoutArguments()
     {
@@ -359,9 +332,6 @@ class FresqueTest extends TestCase
 
     /**
      * Queuing a job with wrong number of arguments, will fail
-     *
-     * @covers \Fresque\Fresque::enqueue
-     * @return  void
      */
     public function testEnqueueJob()
     {
@@ -386,9 +356,6 @@ class FresqueTest extends TestCase
 
     /**
      * Printing help message
-     *
-     * @covers \Fresque\Fresque::help
-     * @return  void
      */
     public function testHelp()
     {
@@ -429,9 +396,6 @@ class FresqueTest extends TestCase
 
     /**
      * Printing help message when calling a unrecognized command
-     *
-     * @covers \Fresque\Fresque::help
-     * @return  void
      */
     public function testPrintHelpWhenCallingUnhrecognizedCommand()
     {
@@ -449,10 +413,6 @@ class FresqueTest extends TestCase
         $this->shell->help('hello');
     }
 
-    /**
-     * @covers \Fresque\Fresque::sendSignal
-     * @return  void
-     */
     public function testSendSignalWhenNoWorkers()
     {
         $option = new \stdClass();
@@ -470,10 +430,6 @@ class FresqueTest extends TestCase
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
-    /**
-     * @covers \Fresque\Fresque::sendSignal
-     * @return  void
-     */
     public function testSendSignalWhenOnlyOneWorker()
     {
         $option = new \stdClass();
@@ -502,10 +458,6 @@ class FresqueTest extends TestCase
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
-    /**
-     * @covers \Fresque\Fresque::sendSignal
-     * @return  void
-     */
     public function testSendSignalDisplayErrorMessageOnFail()
     {
         $option = new \stdClass();
@@ -537,10 +489,6 @@ class FresqueTest extends TestCase
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
-    /**
-     * @covers \Fresque\Fresque::sendSignal
-     * @return  void
-     */
     public function testSendSignalToAllWorkersWithAllOption()
     {
         $option = new \stdClass();
@@ -580,10 +528,6 @@ class FresqueTest extends TestCase
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
-    /**
-     * @covers \Fresque\Fresque::sendSignal
-     * @return  void
-     */
     public function testSendSignalToAllWorkersWithAllInput()
     {
         $option = new \stdClass();
@@ -635,10 +579,6 @@ class FresqueTest extends TestCase
         $this->shell->sendSignal($this->sendSignalOptions);
     }
 
-    /**
-     * @covers \Fresque\Fresque::sendSignal
-     * @return  void
-     */
     public function testSendSignalToOneWorkerWhenMultipleWorker()
     {
         $option = new \stdClass();
@@ -689,8 +629,6 @@ class FresqueTest extends TestCase
 
     /**
      * Stop will send the QUIT signal and the active workers list to sendSignal()
-     *
-     * @covers \Fresque\Fresque::stop
      */
     public function testStop()
     {
@@ -712,8 +650,6 @@ class FresqueTest extends TestCase
 
     /**
      * Stop will send the TERM signal if 'force' option is selected
-     *
-     * @covers \Fresque\Fresque::stop
      */
     public function testForceStop()
     {
@@ -738,8 +674,6 @@ class FresqueTest extends TestCase
 
     /**
      * Pause will send the USR2 signal and the active workers list to sendSignal()
-     *
-     * @covers \Fresque\Fresque::pause
      */
     public function testPause()
     {
@@ -762,8 +696,6 @@ class FresqueTest extends TestCase
 
     /**
      * Resume will send the CONT signal and the paused workers list to sendSignal()
-     *
-     * @covers \Fresque\Fresque::resume
      */
     public function testResume()
     {
@@ -783,9 +715,6 @@ class FresqueTest extends TestCase
     }
 
 
-    /**
-     * @covers \Fresque\Fresque::stats
-     */
     public function testStats()
     {
         $datas = array(
@@ -871,9 +800,6 @@ class FresqueTest extends TestCase
         $this->shell->stats();
     }
 
-    /**
-     * @covers \Fresque\Fresque::test
-     */
     public function testTest()
     {
         $this->shell->expects($this->once())->method('outputTitle')->with($this->stringContains('testing configuration'));
@@ -882,18 +808,12 @@ class FresqueTest extends TestCase
         $this->markTestIncomplete();
     }
 
-    /**
-     * @covers \Fresque\Fresque::testConfig
-     */
     public function testTestConfig()
     {
         //$this->shell->testConfig();
         $this->markTestIncomplete();
     }
 
-    /**
-     * @covers \Fresque\Fresque::callCommand
-     */
     public function testCallCommandWithValidCommand()
     {
         $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('start', 'help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'))->getMock();
@@ -915,9 +835,6 @@ class FresqueTest extends TestCase
         $this->shell->callCommand('start');
     }
 
-    /**
-     * @covers \Fresque\Fresque::callCommand
-     */
     public function testCallCommandWithValidCommandButInvalidOptions()
     {
         $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('start', 'help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'))->getMock();
@@ -945,9 +862,6 @@ class FresqueTest extends TestCase
         $this->shell->callCommand('start');
     }
 
-    /**
-     * @covers \Fresque\Fresque::callCommand
-     */
     public function testCallCommandWithInvalidCommand()
     {
         $this->shell = $this->getMockBuilder(Fresque::class)->onlyMethods(array('help', 'loadSettings', 'setResqueBackend', 'initResqueStatus', 'initResqueStats'))->getMock();
@@ -961,10 +875,6 @@ class FresqueTest extends TestCase
         $this->shell->callCommand('command');
     }
 
-    /**
-     * @covers \Fresque\Fresque::reset
-     * @return void
-     */
     public function testReset()
     {
         $this->ResqueStatus->expects($this->once())->method('clearWorkers');

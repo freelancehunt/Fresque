@@ -6,15 +6,14 @@
     </include>
     <exclude>
       <directory suffix=".php">./vendor/</directory>
-      <directory suffix=".php">./tests</directory>
+      <directory suffix=".php">./tests/</directory>
       <file>./src/init.php</file>
       <file>./src/Fresque/DialogMenuValidator.php</file>
       <file>./src/Fresque/SendSignalCommandOptions.php</file>
       <file>./src/Fresque/ResqueStats.php</file>
     </exclude>
     <report>
-      <clover outputFile="./build/logs/clover.xml"/>
-      <html outputDirectory="./build/coverage"/>
+      <clover outputFile="tests/result/coverage/clover.xml"/>
     </report>
   </coverage>
   <testsuites>

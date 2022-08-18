@@ -2,6 +2,6 @@ composer.phar
 composer.lock
 vendor/
 /node_modules/
-/build/
+/tests/result/
 .idea
 .phpunit.result.cache
