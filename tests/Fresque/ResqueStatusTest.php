@@ -30,9 +30,6 @@ class ResqueStatusTest extends TestCase
         $this->redis->del(ResqueStatus::PAUSED_WORKER_KEY);
     }
 
-    /**
-     * @covers ResqueStatus::addWorker
-     */
     public function testAddWorker()
     {
         $workers = array(
@@ -53,9 +50,6 @@ class ResqueStatusTest extends TestCase
         $this->assertEquals($workers["6523"], unserialize($datas["6523"]));
     }
 
-    /**
-     * @covers ResqueStatus::getWorkers
-     */
     public function testGetWorkers()
     {
         foreach ($this->workers as $pid => $worker) {
@@ -65,9 +59,6 @@ class ResqueStatusTest extends TestCase
         $this->assertEquals($this->workers, $this->ResqueStatus->getWorkers());
     }
 
-    /**
-     * @covers ResqueStatus::setPausedWorker
-     */
     public function testSetPausedWorker()
     {
         $worker = 'workerName';
@@ -77,9 +68,6 @@ class ResqueStatusTest extends TestCase
         $this->assertContains($worker, $this->redis->sMembers(ResqueStatus::PAUSED_WORKER_KEY));
     }
 
-    /**
-     * @covers ResqueStatus::setPausedWorker
-     */
     public function testSetActiveWorker()
     {
         $workers = array('workerOne', 'workerTwo');
@@ -94,9 +82,6 @@ class ResqueStatusTest extends TestCase
         $this->assertEquals(array($workers[1]), $pausedWorkers);
     }
 
-    /**
-     * @covers ResqueStatus::getPausedWorkers
-     */
     public function testGetPausedWorker()
     {
         $workers = array('workerOne', 'workerTwo');
@@ -114,17 +99,12 @@ class ResqueStatusTest extends TestCase
 
     /**
      * Test that getPausedWorkers always return an array
-     *
-     * @covers ResqueStatus::getPausedWorkers
      */
     public function testGetPausedWorkerWhenThereIsNoPausedWorkers()
     {
         $this->assertEquals(array(), $this->ResqueStatus->getPausedWorkers());
     }
 
-    /**
-     * @covers ResqueStatus::removeWorker
-     */
     public function testRemoveWorker()
     {
         foreach ($this->workers as $pid => $worker) {
@@ -141,9 +121,6 @@ class ResqueStatusTest extends TestCase
         $this->assertEquals(sort($w), sort($ww));
     }
 
-    /**
-     * @covers ResqueStatus::clearWorkers
-     */
     public function testClearWorkers()
     {
         $this->redis->set(ResqueStatus::WORKER_KEY, 'one');

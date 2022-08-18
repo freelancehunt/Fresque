@@ -1,6 +1,6 @@
 # Fresque
 
-[![Coverage Status](https://codecov.io/gh/freelancehunt/fresque/branch/master/graph/badge.svg)](https://codecov.io/gh/freelancehunt/fresque)
+[![Coverage Status](https://coveralls.io/repos/github/freelancehunt/fresque/badge.svg?branch=add-coverage)](https://coveralls.io/github/freelancehunt/fresque?branch=add-coverage)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/freelancehunt/fresque.svg)](https://packagist.org/packages/freelancehunt/fresque)
 [![Packagist](https://img.shields.io/packagist/v/freelancehunt/fresque.svg)](https://packagist.org/packages/freelancehunt/fresque)
 [![Packagist](https://img.shields.io/packagist/dt/freelancehunt/fresque.svg)](https://packagist.org/packages/freelancehunt/fresque)

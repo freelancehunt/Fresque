@@ -1,1 +1,2 @@
-src_dir: ./
+coverage_clover: tests/result/coverage/*.xml
+json_path: tests/result/coveralls-upload.json
