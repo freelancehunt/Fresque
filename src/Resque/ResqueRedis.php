@@ -4,6 +4,7 @@ namespace Freelancehunt\Resque;
 
 use Redis;
 
+#[\AllowDynamicProperties]
 class ResqueRedis extends Redis
 {
     private static $defaultNamespace = 'resque:';
